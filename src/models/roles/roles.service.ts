@@ -133,6 +133,26 @@ export class RolesService {
         role: { id: roleId },
       });
 
+      // Obtener el slug del rol
+      const role = await this.rolesRepository.findById(roleId);
+      
+      // Actualizar el campo roles del usuario
+      const userRepository = this.dataSource.getRepository('User');
+      const user = await userRepository.findOne({ where: { id: userId } });
+      
+      if (user && role) {
+        // Inicializar roles si no existe
+        if (!user.roles) {
+          user.roles = [];
+        }
+        
+        // Añadir el slug del rol si no existe ya
+        if (!user.roles.includes(role.slug)) {
+          user.roles.push(role.slug);
+          await userRepository.save(user);
+        }
+      }
+
       this.logger.log(`Rol ${roleId} asignado al usuario ${userId}`);
     } catch (error) {
       this.logger.error(
@@ -157,6 +177,21 @@ export class RolesService {
           `No se encontró la asignación de rol ${roleId} para el usuario ${userId}`,
         );
       } else {
+        // Obtener el slug del rol
+        const role = await this.rolesRepository.findById(roleId);
+        
+        // Actualizar el campo roles del usuario
+        if (role) {
+          const userRepository = this.dataSource.getRepository('User');
+          const user = await userRepository.findOne({ where: { id: userId } });
+          
+          if (user && Array.isArray(user.roles)) {
+            // Eliminar el slug del rol del array
+            user.roles = user.roles.filter(slug => slug !== role.slug);
+            await userRepository.save(user);
+          }
+        }
+        
         this.logger.log(`Rol ${roleId} revocado del usuario ${userId}`);
       }
     } catch (error) {

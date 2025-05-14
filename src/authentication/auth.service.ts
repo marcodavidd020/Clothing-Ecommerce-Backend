@@ -230,7 +230,13 @@ export class AuthService {
    */
   async register(createUserDto: CreateUserDto): Promise<UserSerializer> {
     try {
-      const user = await this.usersService.create(createUserDto);
+      // Asegurarse de que roles esté inicializado como un array vacío
+      const userData = {
+        ...createUserDto,
+        roles: [],
+      };
+      
+      const user = await this.usersService.create(userData);
 
       // Asignar rol predeterminado "user" al nuevo usuario
       await this.assignDefaultRole(user.id);
@@ -301,7 +307,13 @@ export class AuthService {
    */
   async registerClient(createUserDto: CreateUserDto): Promise<UserSerializer> {
     try {
-      const user = await this.usersService.create(createUserDto);
+      // Asegurarse de que roles esté inicializado como un array vacío
+      const userData = {
+        ...createUserDto,
+        roles: [],
+      };
+      
+      const user = await this.usersService.create(userData);
 
       // Asignar rol de cliente al nuevo usuario
       await this.assignClientRole(user.id);

@@ -86,9 +86,11 @@ export class UsersService {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
 
+    // Inicializar el campo roles como un array vacío
     return this.usersRepository.create({
       ...userData,
       password: hashedPassword,
+      roles: [], // Inicializamos el array de roles vacío
     });
   }
 

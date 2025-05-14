@@ -23,6 +23,7 @@ export interface IUserCreate {
   phone?: string;
   isActive?: boolean;
   avatar?: string;
+  roles?: string[];
 }
 
 export interface IUserUpdate {
