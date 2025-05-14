@@ -1,0 +1,20 @@
+{
+  "name": "API de Ecommerce - Documentación",
+  "description": "Documentación completa del API de Ecommerce desarrollada con NestJS",
+  "output": "docs",
+  "theme": "material",
+  "tsconfig": "tsconfig.json",
+  "hideGenerator": true,
+  "disableSourceCode": false,
+  "disablePrivateOrInternalMembers": false,
+  "disableProtectedMembers": false,
+  "disableLifeCycleHooks": false,
+  "disableDependencies": false,
+  "disableMethodsOnPrivateProperties": false,
+  "disableTemplateTab": false,
+  "includeDirectory": ["src"],
+  "excludeExternals": true,
+  "includes": "documentation",
+  "includesName": "Documentación Adicional",
+  "coverageTest": 30
+}

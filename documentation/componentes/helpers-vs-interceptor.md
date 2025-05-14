@@ -155,4 +155,4 @@ if (
 1. **Estrategia por defecto**: Usa el interceptor global para la mayoría de los endpoints
 2. **Personalización cuando sea necesario**: Usa helpers para casos específicos
 3. **Coherencia en el equipo**: Define claramente cuándo usar cada enfoque
-4. **Pruebas**: Asegúrate de probar ambas formas para garantizar respuestas correctas 
+4. **Pruebas**: Asegúrate de probar ambas formas para garantizar respuestas correctas

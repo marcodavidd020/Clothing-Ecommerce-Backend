@@ -10,11 +10,10 @@ Este documento analiza los middleware disponibles en el proyecto, identificando 
 
 **Justificación**: Este middleware se aplica globalmente a todas las rutas (`*`) en el `AppModule`. Es esencial para el seguimiento de solicitudes, especialmente en un entorno de microservicios o logging distribuido. Asigna un identificador único a cada solicitud que permite rastrear el flujo de una petición a través de diferentes servicios.
 
-**Implementación**: 
+**Implementación**:
+
 ```typescript
-consumer
-  .apply(CorrelationIdMiddleware)
-  .forRoutes('*');
+consumer.apply(CorrelationIdMiddleware).forRoutes('*');
 ```
 
 ### 2. LoggingMiddleware
@@ -24,10 +23,9 @@ consumer
 **Justificación**: Aplicado globalmente a todas las rutas para proporcionar logging consistente de solicitudes HTTP. Captura información valiosa como el método HTTP, la URL, IP del cliente, tiempo de respuesta y códigos de estado, facilitando la depuración y el análisis de tráfico.
 
 **Implementación**:
+
 ```typescript
-consumer
-  .apply(LoggingMiddleware)
-  .forRoutes('*');
+consumer.apply(LoggingMiddleware).forRoutes('*');
 ```
 
 ### 3. RateLimitMiddleware
@@ -37,12 +35,13 @@ consumer
 **Justificación**: Se aplica específicamente a rutas sensibles como `auth` y `api`, excluyendo endpoints de monitoreo como `health` y `docs`. Implementa protección contra ataques de fuerza bruta y DDoS limitando el número de solicitudes por IP, lo que es crucial para la seguridad de la API.
 
 **Implementación**:
+
 ```typescript
 consumer
   .apply(RateLimitMiddleware)
   .exclude(
     { path: 'health', method: RequestMethod.GET },
-    { path: 'docs', method: RequestMethod.GET }
+    { path: 'docs', method: RequestMethod.GET },
   )
   .forRoutes('auth', 'api');
 ```
@@ -54,6 +53,7 @@ consumer
 **Estado**: ❌ No en uso
 
 **Justificación para eliminación**:
+
 1. **Redundancia**: La funcionalidad ya está cubierta por el sistema de autenticación JWT, que proporciona el usuario actual a través de guards y decoradores personalizados como `@LoggedInUser()`.
 2. **Rendimiento**: Implica consultas innecesarias a la base de datos en cada solicitud, incluso cuando los datos completos del usuario no son necesarios.
 3. **Arquitectura**: Viola el principio de responsabilidad única al mezclar aspectos de autenticación y carga de datos.
@@ -70,4 +70,4 @@ consumer
 
 ## Conclusión
 
-El conjunto actual de middleware proporciona un buen equilibrio entre funcionalidad y rendimiento. La eliminación del `UserMiddleware` fue una decisión acertada para evitar consultas innecesarias a la base de datos, mientras que los middleware restantes proporcionan valor en términos de logging, seguridad y capacidad de depuración. 
+El conjunto actual de middleware proporciona un buen equilibrio entre funcionalidad y rendimiento. La eliminación del `UserMiddleware` fue una decisión acertada para evitar consultas innecesarias a la base de datos, mientras que los middleware restantes proporcionan valor en términos de logging, seguridad y capacidad de depuración.

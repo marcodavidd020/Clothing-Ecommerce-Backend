@@ -36,7 +36,7 @@ export class User {
 
   @Column({ length: 20, nullable: true })
   phoneNumber: string;
-  
+
   // ... resto de la entidad
 }
 ```
@@ -52,12 +52,15 @@ Esto generará un archivo en `src/database/migrations/` con un timestamp (por ej
 ```typescript
 export class Auto1592951122243 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.addColumn('users', new TableColumn({
-      name: 'phoneNumber',
-      type: 'varchar',
-      length: '20',
-      isNullable: true
-    }));
+    await queryRunner.addColumn(
+      'users',
+      new TableColumn({
+        name: 'phoneNumber',
+        type: 'varchar',
+        length: '20',
+        isNullable: true,
+      }),
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -77,4 +80,4 @@ npm run migration:run
 - **No usar `synchronize: true` en producción**: Aunque es conveniente durante el desarrollo, puede causar pérdida de datos en producción.
 - **Revisar migraciones antes de aplicarlas**: Las migraciones automáticas pueden no ser perfectas en todos los casos.
 - **Migraciones con relaciones**: Cuando se trabaja con relaciones, a veces es mejor escribir migraciones manualmente.
-- **Orden de ejecución**: Las migraciones se ejecutan en orden de timestamp, asegúrate de que sea coherente con las dependencias entre tablas. 
+- **Orden de ejecución**: Las migraciones se ejecutan en orden de timestamp, asegúrate de que sea coherente con las dependencias entre tablas.

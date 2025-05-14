@@ -67,19 +67,19 @@ common/
 
 ### Guards
 
-| Guard | Descripción | Parámetros |
-|-------|-------------|------------|
-| `JwtAuthGuard` | Verifica autenticación mediante token JWT | Ninguno |
-| `UserTypesGuard` | Verifica roles de usuario para acceso | Roles requeridos mediante `@UserTypes()` |
+| Guard            | Descripción                               | Parámetros                               |
+| ---------------- | ----------------------------------------- | ---------------------------------------- |
+| `JwtAuthGuard`   | Verifica autenticación mediante token JWT | Ninguno                                  |
+| `UserTypesGuard` | Verifica roles de usuario para acceso     | Roles requeridos mediante `@UserTypes()` |
 
 ### Decoradores
 
-| Decorador | Descripción | Parámetros | Ejemplo |
-|-----------|-------------|------------|---------|
-| `@UserTypes()` | Define roles permitidos | `...roles: string[]` | `@UserTypes('admin', 'editor')` |
-| `@LoggedInUser()` | Obtiene usuario actual | `data?: string` (propiedad) | `@LoggedInUser() user` o `@LoggedInUser('id') userId` |
-| `@UniqueUserEmail()` | Valida email único | `validationOptions?: ValidationOptions` | `@UniqueUserEmail() email: string` |
-| `@UserExists()` | Valida existencia de usuario | `validationOptions?: ValidationOptions` | `@UserExists() userId: string` |
+| Decorador            | Descripción                  | Parámetros                              | Ejemplo                                               |
+| -------------------- | ---------------------------- | --------------------------------------- | ----------------------------------------------------- |
+| `@UserTypes()`       | Define roles permitidos      | `...roles: string[]`                    | `@UserTypes('admin', 'editor')`                       |
+| `@LoggedInUser()`    | Obtiene usuario actual       | `data?: string` (propiedad)             | `@LoggedInUser() user` o `@LoggedInUser('id') userId` |
+| `@UniqueUserEmail()` | Valida email único           | `validationOptions?: ValidationOptions` | `@UniqueUserEmail() email: string`                    |
+| `@UserExists()`      | Valida existencia de usuario | `validationOptions?: ValidationOptions` | `@UserExists() userId: string`                        |
 
 ### Helpers de Respuesta
 
@@ -88,24 +88,24 @@ Los helpers son funciones de utilidad que pueden ser utilizadas en cualquier par
 - **Helpers**: Proporcionan funciones auxiliares para tareas comunes, como formateo de respuestas o manipulación de strings.
 - **Pipes**: Se enfocan en la validación y transformación de datos durante el ciclo de vida de las peticiones.
 
-| Función | Descripción | Parámetros |
-|---------|-------------|------------|
-| `createSuccessResponse()` | Crea respuesta de éxito | `data: any, message?: string` |
-| `createCreatedResponse()` | Respuesta para creación | `data: any, entityName?: string` |
-| `createUpdatedResponse()` | Respuesta para actualización | `data: any, entityName?: string` |
-| `createDeletedResponse()` | Respuesta para eliminación | `entityName?: string` |
-| `createErrorResponse()` | Crea respuesta de error | `message?: string, statusCode?: number, errors?: any[]` |
-| `createNotFoundResponse()` | Error 404 | `entityName?: string` |
-| `createUnauthorizedResponse()` | Error 401 | `message?: string` |
-| `createForbiddenResponse()` | Error 403 | `message?: string` |
+| Función                        | Descripción                  | Parámetros                                              |
+| ------------------------------ | ---------------------------- | ------------------------------------------------------- |
+| `createSuccessResponse()`      | Crea respuesta de éxito      | `data: any, message?: string`                           |
+| `createCreatedResponse()`      | Respuesta para creación      | `data: any, entityName?: string`                        |
+| `createUpdatedResponse()`      | Respuesta para actualización | `data: any, entityName?: string`                        |
+| `createDeletedResponse()`      | Respuesta para eliminación   | `entityName?: string`                                   |
+| `createErrorResponse()`        | Crea respuesta de error      | `message?: string, statusCode?: number, errors?: any[]` |
+| `createNotFoundResponse()`     | Error 404                    | `entityName?: string`                                   |
+| `createUnauthorizedResponse()` | Error 401                    | `message?: string`                                      |
+| `createForbiddenResponse()`    | Error 403                    | `message?: string`                                      |
 
 ### Helpers de Paginación
 
-| Función | Descripción | Parámetros |
-|---------|-------------|------------|
-| `createPaginatedResponse()` | Crea respuesta paginada | `entities: any[], totalItems: number, options: PaginationOptions` |
-| `getPaginationMetadata()` | Genera metadatos de paginación | `totalItems: number, options: PaginationOptions` |
-| `calculateTotalPages()` | Calcula el número total de páginas | `totalItems: number, limit: number` |
+| Función                     | Descripción                        | Parámetros                                                        |
+| --------------------------- | ---------------------------------- | ----------------------------------------------------------------- |
+| `createPaginatedResponse()` | Crea respuesta paginada            | `entities: any[], totalItems: number, options: PaginationOptions` |
+| `getPaginationMetadata()`   | Genera metadatos de paginación     | `totalItems: number, options: PaginationOptions`                  |
+| `calculateTotalPages()`     | Calcula el número total de páginas | `totalItems: number, limit: number`                               |
 
 #### Interfaces de Paginación
 
@@ -145,62 +145,62 @@ Los helpers se utilizan principalmente en:
 
 ### Helpers de String
 
-| Función | Descripción | Ejemplo |
-|---------|-------------|---------|
-| `slugify()` | Convierte texto a formato URL | `slugify('Hola Mundo') // 'hola-mundo'` |
-| `capitalize()` | Capitaliza primera letra | `capitalize('hola') // 'Hola'` |
-| `kebabToCamel()` | Convierte kebab-case a camelCase | `kebabToCamel('user-name') // 'userName'` |
-| `camelToKebab()` | Convierte camelCase a kebab-case | `camelToKebab('userName') // 'user-name'` |
-| `stripHtml()` | Elimina etiquetas HTML | `stripHtml('<p>Texto</p>') // 'Texto'` |
-| `truncate()` | Acorta texto a longitud máxima | `truncate('Texto largo', 5) // 'Texto...'` |
+| Función          | Descripción                      | Ejemplo                                    |
+| ---------------- | -------------------------------- | ------------------------------------------ |
+| `slugify()`      | Convierte texto a formato URL    | `slugify('Hola Mundo') // 'hola-mundo'`    |
+| `capitalize()`   | Capitaliza primera letra         | `capitalize('hola') // 'Hola'`             |
+| `kebabToCamel()` | Convierte kebab-case a camelCase | `kebabToCamel('user-name') // 'userName'`  |
+| `camelToKebab()` | Convierte camelCase a kebab-case | `camelToKebab('userName') // 'user-name'`  |
+| `stripHtml()`    | Elimina etiquetas HTML           | `stripHtml('<p>Texto</p>') // 'Texto'`     |
+| `truncate()`     | Acorta texto a longitud máxima   | `truncate('Texto largo', 5) // 'Texto...'` |
 
 ### Interceptores
 
-| Interceptor | Descripción | Uso |
-|-------------|-------------|-----|
-| `HttpCacheInterceptor` | Caché inteligente para respuestas GET. Mejora el rendimiento almacenando respuestas en Redis. Solo cachea peticiones sin autenticación y rutas marcadas explícitamente. [Documentación detallada](./http-cache-interceptor.md) | `@UseInterceptors(HttpCacheInterceptor)` |
-| `ResponseTransformInterceptor` | Transforma todas las respuestas a un formato estándar usando SuccessSerializer y ErrorSerializer | `@UseInterceptors(ResponseTransformInterceptor)` |
+| Interceptor                    | Descripción                                                                                                                                                                                                                    | Uso                                              |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
+| `HttpCacheInterceptor`         | Caché inteligente para respuestas GET. Mejora el rendimiento almacenando respuestas en Redis. Solo cachea peticiones sin autenticación y rutas marcadas explícitamente. [Documentación detallada](./http-cache-interceptor.md) | `@UseInterceptors(HttpCacheInterceptor)`         |
+| `ResponseTransformInterceptor` | Transforma todas las respuestas a un formato estándar usando SuccessSerializer y ErrorSerializer                                                                                                                               | `@UseInterceptors(ResponseTransformInterceptor)` |
 
 ### Pipes
 
 Los pipes se utilizan para transformar y validar datos entrantes. El `ValidationPipe` personalizado extiende la funcionalidad del pipe estándar de NestJS para proporcionar mensajes de error más detallados.
 
-| Pipe | Descripción | Uso |
-|------|-------------|-----|
+| Pipe             | Descripción                                                                             | Uso                                  |
+| ---------------- | --------------------------------------------------------------------------------------- | ------------------------------------ |
 | `ValidationPipe` | Validación avanzada de datos con errores formateados según el estándar de la aplicación | Global o `@UsePipes(ValidationPipe)` |
 
 ### Middleware
 
 El middleware procesa las solicitudes antes de que lleguen a los controladores. Algunos ejemplos de middleware que podrían implementarse en esta estructura son:
 
-| Middleware | Descripción | Uso |
-|------------|-------------|-----|
-| `UserMiddleware` | Carga datos del usuario actual en la solicitud | Rutas que requieren contexto de usuario |
-| `LoggingMiddleware` | Registra información sobre solicitudes HTTP | Global o para rutas específicas |
-| `RateLimitMiddleware` | Limita el número de solicitudes por IP | Rutas públicas susceptibles a abusos |
-| `CorrelationIdMiddleware` | Añade un ID de correlación para seguimiento | Global para todas las rutas |
+| Middleware                | Descripción                                    | Uso                                     |
+| ------------------------- | ---------------------------------------------- | --------------------------------------- |
+| `UserMiddleware`          | Carga datos del usuario actual en la solicitud | Rutas que requieren contexto de usuario |
+| `LoggingMiddleware`       | Registra información sobre solicitudes HTTP    | Global o para rutas específicas         |
+| `RateLimitMiddleware`     | Limita el número de solicitudes por IP         | Rutas públicas susceptibles a abusos    |
+| `CorrelationIdMiddleware` | Añade un ID de correlación para seguimiento    | Global para todas las rutas             |
 
 ## Constantes Importantes
 
 Definidas en `constants/settings.ts`:
 
-| Constante | Tipo | Descripción |
-|-----------|------|-------------|
-| `USER_TYPES_KEY` | string | Clave para metadatos de roles |
-| `CURRENT_USER_KEY` | string | Identificador del usuario en solicitud |
-| `CACHE_TTL` | number | Tiempo de vida del caché (segundos) |
-| `DEFAULT_PAGE_SIZE` | number | Tamaño predeterminado de página |
-| `MAX_PAGE_SIZE` | number | Tamaño máximo de página |
-| `ERROR_MESSAGES` | object | Mensajes de error estandarizados |
+| Constante           | Tipo   | Descripción                            |
+| ------------------- | ------ | -------------------------------------- |
+| `USER_TYPES_KEY`    | string | Clave para metadatos de roles          |
+| `CURRENT_USER_KEY`  | string | Identificador del usuario en solicitud |
+| `CACHE_TTL`         | number | Tiempo de vida del caché (segundos)    |
+| `DEFAULT_PAGE_SIZE` | number | Tamaño predeterminado de página        |
+| `MAX_PAGE_SIZE`     | number | Tamaño máximo de página                |
+| `ERROR_MESSAGES`    | object | Mensajes de error estandarizados       |
 
 ## Serializadores
 
-| Serializador | Descripción | Campos expuestos |
-|--------------|-------------|------------------|
-| `ModelSerializer` | Base para modelos | `id`, `createdAt`, `updatedAt` |
-| `SuccessSerializer` | Respuestas exitosas | `success`, `message`, `data`, `timestamp` |
-| `ErrorSerializer` | Respuestas de error | `success`, `message`, `statusCode`, `errors`, `timestamp` |
-| `ValidationErrorSerializer` | Errores de validación | Como `ErrorSerializer` + errores detallados |
+| Serializador                | Descripción           | Campos expuestos                                          |
+| --------------------------- | --------------------- | --------------------------------------------------------- |
+| `ModelSerializer`           | Base para modelos     | `id`, `createdAt`, `updatedAt`                            |
+| `SuccessSerializer`         | Respuestas exitosas   | `success`, `message`, `data`, `timestamp`                 |
+| `ErrorSerializer`           | Respuestas de error   | `success`, `message`, `statusCode`, `errors`, `timestamp` |
+| `ValidationErrorSerializer` | Errores de validación | Como `ErrorSerializer` + errores detallados               |
 
 ## Ejemplos de Uso
 
@@ -280,7 +280,7 @@ import { createPaginatedResponse } from '../common/helpers/responses/pagination.
 async findAll(@Query('page') page = 1, @Query('limit') limit = 10) {
   const options: PaginationOptions = { page, limit };
   const { items, totalItems } = await this.service.findPaginated(options);
-  
+
   return createPaginatedResponse(items, totalItems, options);
 }
 ```
@@ -296,7 +296,7 @@ async search(
 ) {
   const options: PaginationOptions = { page, limit };
   const { items, totalItems } = await this.service.search(query, options);
-  
+
   return createPaginatedResponse(items, totalItems, options);
 }
 ```
@@ -310,7 +310,7 @@ export class CreateUserDto {
   @IsEmail()
   @UniqueUserEmail()
   email: string;
-  
+
   // Otras propiedades...
 }
-``` 
+```

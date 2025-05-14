@@ -142,16 +142,74 @@ src/
 
 ## 📚 Documentación
 
-Documentación detallada disponible en `src/document/`:
+### Documentación detallada del proyecto
 
-- [⚙️ Configuración del Sistema](src/document/configuracion-sistema.md)
-- [🏛️ Estructura General](src/document/estructura-general.md)
-- [🧩 Estructura de Modelos](src/document/estructura-modelos.md)
-- [🔌 Estructura de Proveedores](src/document/providers-estructura.md)
-- [🗃️ Estructura de Base de Datos](src/document/database-estructura.md)
-- [🔄 Migraciones](src/document/database-migraciones.md)
-- [🔐 Sistema de Autenticación](src/document/authentication.md)
-- [🧰 Componentes Comunes](src/document/common.md)
+La documentación completa está disponible a través de Compodoc:
+
+```bash
+# Generar documentación
+npm run compodoc:gen
+
+# Servir documentación en http://localhost:8080
+npm run compodoc:serve
+```
+
+La documentación incluye:
+
+- Arquitectura y estructura del sistema
+- Descripción detallada de módulos y componentes
+- Diagramas de dependencias y relaciones
+- Guías de desarrollo y flujos comunes
+- Referencia de API
+
+### Archivos de documentación
+
+Los archivos fuente de la documentación están disponibles en el directorio `documentation/`:
+
+- [📝 Introducción y Descripción General](documentation/index.md)
+- [🏛️ Arquitectura del Sistema](documentation/arquitectura.md)
+- [🧩 Módulos del Sistema](documentation/modulos.md)
+- [⚙️ Componentes](documentation/componentes/)
+- [📋 Guías de Usuario](documentation/guias/)
+- [📈 Flujos Comunes](documentation/guias/flujos-comunes.md)
+- [📊 Prácticas Recomendadas](documentation/guias/practicas-recomendadas.md)
+
+## 🛣️ Roadmap de Módulos de Ecommerce
+
+Los siguientes módulos están planificados para completar la plataforma de ecommerce:
+
+### Módulo de Productos
+- CRUD completo para productos
+- Categorización y etiquetado
+- Gestión de variantes (tallas, colores, etc.)
+- Sistema de búsqueda avanzado
+- Gestión de inventario
+
+### Módulo de Carrito
+- Agregar/remover productos
+- Actualizar cantidades
+- Aplicar cupones y descuentos
+- Persistencia del carrito
+
+### Módulo de Pedidos
+- Proceso de checkout completo
+- Seguimiento de estado del pedido
+- Historial de pedidos
+- Facturación
+- Gestión de devoluciones
+
+### Módulo de Pagos
+- Integración con múltiples pasarelas
+- Procesamiento de pagos con tarjeta
+- Reembolsos y devoluciones
+- Registro de transacciones
+
+### Módulo de Envíos
+- Integración con proveedores logísticos
+- Cálculo de costes de envío
+- Seguimiento de paquetes
+
+Para más detalles sobre los módulos planificados, consulte la [documentación de ecommerce](documentation/modulos-planificados/ecommerce.md).
 
 ## 💻 Comandos principales
 

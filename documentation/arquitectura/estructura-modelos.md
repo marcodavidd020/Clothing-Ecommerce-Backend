@@ -62,4 +62,4 @@ models/users/
 3. El servicio usa los repositorios para operaciones de datos
 4. El repositorio devuelve entidades serializadas mediante serializadores
 5. El servicio aplica lógica de negocio y devuelve los resultados
-6. El controlador transforma los resultados en respuestas HTTP 
+6. El controlador transforma los resultados en respuestas HTTP

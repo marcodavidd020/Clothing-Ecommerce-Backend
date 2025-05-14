@@ -12,7 +12,12 @@ En NestJS, los middleware se configuran típicamente en el módulo principal (`A
 
 ```typescript
 // src/app.module.ts
-import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
+import {
+  Module,
+  NestModule,
+  MiddlewareConsumer,
+  RequestMethod,
+} from '@nestjs/common';
 import { UserMiddleware } from './common/middleware/models/user.middleware';
 
 @Module({})
@@ -22,7 +27,7 @@ export class AppModule implements NestModule {
       .apply(UserMiddleware)
       .forRoutes(
         { path: 'users', method: RequestMethod.ALL },
-        { path: 'profile', method: RequestMethod.ALL }
+        { path: 'profile', method: RequestMethod.ALL },
       );
   }
 }
@@ -122,10 +127,10 @@ Estos helpers se pueden usar en cualquier parte de la aplicación para manipular
 async create(@Body() userData: CreateUserDto): Promise<any> {
   // Crear un nombre de usuario a partir del email
   const username = slugify(userData.email.split('@')[0]);
-  
+
   // Capitalizar el nombre
   const formattedName = capitalize(userData.firstName);
-  
+
   // ...
 }
 ```
@@ -190,10 +195,10 @@ map((data) => {
 
   // Si el objeto ya tiene la estructura esperada (viene de createSuccessResponse helper)
   if (
-    data && 
-    typeof data === 'object' && 
-    'success' in data && 
-    'message' in data && 
+    data &&
+    typeof data === 'object' &&
+    'success' in data &&
+    'message' in data &&
     'data' in data &&
     'timestamp' in data
   ) {
@@ -205,14 +210,14 @@ map((data) => {
     message: 'Operación completada con éxito',
     data: data,
   });
-})
+});
 ```
 
 Con esta modificación, se puede usar `createSuccessResponse()` en los controladores sin duplicar la estructura en la respuesta final.
 
 ### Recomendaciones de uso
 
-1. **Enfoque coherente**: Elige usar *o bien* el interceptor *o bien* los helpers, pero no ambos para la misma respuesta
+1. **Enfoque coherente**: Elige usar _o bien_ el interceptor _o bien_ los helpers, pero no ambos para la misma respuesta
 2. **Mejor práctica**: Usa `ResponseTransformInterceptor` a nivel global y evita usar los helpers de respuesta en los controladores
 3. **Alternativa**: Si prefieres el control detallado, usa los helpers y desactiva el interceptor para esos controladores
 
@@ -224,4 +229,4 @@ Con esta modificación, se puede usar `createSuccessResponse()` en los controlad
 - **Helpers de excepciones**: Se utilizan para crear mensajes de error estandarizados
 - **ResponseTransformInterceptor**: Detecta inteligentemente respuestas ya formateadas para evitar redundancia
 
-Esta combinación de middleware y helpers proporciona una estructura coherente y reutilizable para toda la aplicación. 
+Esta combinación de middleware y helpers proporciona una estructura coherente y reutilizable para toda la aplicación.

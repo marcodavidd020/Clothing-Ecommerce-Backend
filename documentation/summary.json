@@ -1,0 +1,128 @@
+[
+  {
+    "title": "Introducción",
+    "file": "index.md"
+  },
+  {
+    "title": "Arquitectura",
+    "children": [
+      {
+        "title": "Visión General",
+        "file": "arquitectura.md"
+      },
+      {
+        "title": "Estructura General",
+        "file": "arquitectura/estructura-general.md"
+      },
+      {
+        "title": "Estructura de Modelos",
+        "file": "arquitectura/estructura-modelos.md"
+      },
+      {
+        "title": "Estructura de Proveedores",
+        "file": "arquitectura/providers-estructura.md"
+      },
+      {
+        "title": "Estructura de Base de Datos",
+        "file": "arquitectura/database-estructura.md"
+      },
+      {
+        "title": "Migraciones",
+        "file": "arquitectura/database-migraciones.md"
+      },
+      {
+        "title": "Configuración del Sistema",
+        "file": "arquitectura/configuracion-sistema.md"
+      }
+    ]
+  },
+  {
+    "title": "Módulos Implementados",
+    "children": [
+      {
+        "title": "Autenticación",
+        "file": "modulos/auth.md"
+      },
+      {
+        "title": "Usuarios",
+        "file": "modulos/users.md"
+      },
+      {
+        "title": "Roles y Permisos",
+        "file": "modulos/roles.md"
+      },
+      {
+        "title": "Direcciones",
+        "file": "modulos/addresses.md"
+      }
+    ]
+  },
+  {
+    "title": "Módulos Planificados",
+    "children": [
+      {
+        "title": "Módulos de Ecommerce",
+        "file": "modulos-planificados/ecommerce.md"
+      }
+    ]
+  },
+  {
+    "title": "Componentes",
+    "children": [
+      {
+        "title": "Autenticación",
+        "file": "componentes/authentication.md"
+      },
+      {
+        "title": "Common",
+        "file": "componentes/common.md"
+      },
+      {
+        "title": "Helpers vs Interceptors",
+        "file": "componentes/helpers-vs-interceptor.md"
+      },
+      {
+        "title": "HTTP Cache Interceptor",
+        "file": "componentes/http-cache-interceptor.md"
+      },
+      {
+        "title": "Middleware",
+        "children": [
+          {
+            "title": "Análisis",
+            "file": "componentes/middleware-analysis.md"
+          },
+          {
+            "title": "Ejemplos",
+            "file": "componentes/middleware-examples.md"
+          },
+          {
+            "title": "Helpers",
+            "file": "componentes/middleware-helpers.md"
+          },
+          {
+            "title": "Referencia",
+            "file": "componentes/middleware-reference.md"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Guías",
+    "children": [
+      {
+        "title": "Guía de Desarrollo",
+        "file": "guia-desarrollo.md"
+      },
+      {
+        "title": "Flujos Comunes",
+        "file": "guias/flujos-comunes.md"
+      },
+      {
+        "title": "Prácticas Recomendadas",
+        "file": "guias/practicas-recomendadas.md"
+      }
+    ]
+  }
+]

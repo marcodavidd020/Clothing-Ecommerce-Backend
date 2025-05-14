@@ -12,7 +12,7 @@ consumer
   .apply(UserMiddleware)
   .forRoutes(
     { path: 'users', method: RequestMethod.ALL },
-    { path: 'profile', method: RequestMethod.ALL }
+    { path: 'profile', method: RequestMethod.ALL },
   );
 ```
 
@@ -62,7 +62,7 @@ consumer
     { path: 'auth/profile', method: RequestMethod.ALL },
     { path: 'auth/refresh-token', method: RequestMethod.ALL },
     { path: 'users', method: RequestMethod.ALL },
-    { path: 'addresses/:id/default', method: RequestMethod.PUT }
+    { path: 'addresses/:id/default', method: RequestMethod.PUT },
   );
 ```
 
@@ -115,19 +115,22 @@ consumer
   .apply(UserMiddleware)
   .forRoutes(
     { path: 'users', method: RequestMethod.ALL },
-    { path: 'profile', method: RequestMethod.ALL }
+    { path: 'profile', method: RequestMethod.ALL },
   );
 ```
 
 ## Análisis de Impacto
 
 ### Rendimiento
+
 El middleware actual realiza una consulta a la base de datos para cada solicitud autenticada, incluso cuando los datos no se utilizan. Esto puede afectar el rendimiento.
 
 ### Mantenibilidad
+
 Tener dos formas diferentes de obtener los datos del usuario (mediante middleware y mediante `@LoggedInUser()`) puede dificultar el mantenimiento del código.
 
 ### Claridad del Código
+
 El enfoque actual crea confusión sobre cómo se deben obtener los datos del usuario (a través del middleware o directamente mediante servicios).
 
 ## Recomendación Final
@@ -135,7 +138,8 @@ El enfoque actual crea confusión sobre cómo se deben obtener los datos del usu
 **Opción 4**: Remover el middleware y estandarizar el uso del decorador `@LoggedInUser()` junto con los servicios correspondientes para obtener los datos completos del usuario cuando sea necesario.
 
 Esta solución:
+
 - Elimina consultas innecesarias a la base de datos
 - Simplifica el flujo de autenticación
 - Mantiene un enfoque consistente en toda la aplicación
-- Evita la duplicación de código y responsabilidades 
+- Evita la duplicación de código y responsabilidades
