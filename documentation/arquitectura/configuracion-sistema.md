@@ -128,14 +128,14 @@ export default registerAs('session', () => ({
   cookie: {
     httpOnly: process.env.SESSION_COOKIE_HTTP_ONLY !== 'false',
     secure: process.env.NODE_ENV === 'production',
-    maxAge: parseInt(process.env.SESSION_COOKIE_MAX_AGE || '86400000', 10) // 1 día
+    maxAge: parseInt(process.env.SESSION_COOKIE_MAX_AGE || '86400000', 10), // 1 día
   },
   store: {
     type: process.env.SESSION_STORE_TYPE || 'memory', // memory, redis, db
     host: process.env.SESSION_STORE_HOST,
     port: parseInt(process.env.SESSION_STORE_PORT || '6379', 10),
-    ttl: parseInt(process.env.SESSION_STORE_TTL || '86400', 10)
-  }
+    ttl: parseInt(process.env.SESSION_STORE_TTL || '86400', 10),
+  },
 }));
 ```
 
@@ -153,10 +153,10 @@ Define cómo se configuran los servicios de almacenamiento de archivos:
 export default registerAs('storage', () => ({
   provider: process.env.STORAGE_PROVIDER || 'local', // local, s3, gcs
   baseUrl: process.env.STORAGE_BASE_URL || 'http://localhost:3000/uploads',
-  
+
   // Configuración Local
   localPath: process.env.STORAGE_LOCAL_PATH || 'uploads',
-  
+
   // Configuración S3
   s3: {
     bucket: process.env.STORAGE_S3_BUCKET || 'my-bucket',
@@ -164,10 +164,13 @@ export default registerAs('storage', () => ({
     accessKey: process.env.STORAGE_S3_ACCESS_KEY,
     secretKey: process.env.STORAGE_S3_SECRET_KEY,
   },
-  
+
   // Limitaciones generales
   maxFileSize: parseInt(process.env.STORAGE_MAX_FILE_SIZE || '5242880', 10), // 5MB
-  allowedMimeTypes: (process.env.STORAGE_ALLOWED_MIME_TYPES || 'image/jpeg,image/png,application/pdf').split(',')
+  allowedMimeTypes: (
+    process.env.STORAGE_ALLOWED_MIME_TYPES ||
+    'image/jpeg,image/png,application/pdf'
+  ).split(','),
 }));
 ```
 
@@ -180,7 +183,7 @@ validationSchema: Joi.object({
   // App
   NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
   PORT: Joi.number().default(3000),
-  
+
   // PostgreSQL
   POSTGRES_HOST: Joi.string().default('localhost'),
   POSTGRES_PORT: Joi.number().default(5432),
@@ -331,4 +334,4 @@ STORAGE_GCS_KEY_FILENAME=
 STORAGE_MAX_FILE_SIZE=5242880
 STORAGE_ALLOWED_MIME_TYPES=image/jpeg,image/png,application/pdf
 STORAGE_ALLOWED_EXTENSIONS=.jpg,.jpeg,.png,.pdf
-``` 
+```

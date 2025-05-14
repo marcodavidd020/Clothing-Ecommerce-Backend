@@ -62,12 +62,12 @@ CacheModule.registerAsync({
     store: redisStore,
     host: cacheConfigService.host,
     port: cacheConfigService.port,
-    ttl: cacheConfigService.ttl,  // Tiempo de vida en segundos
-    max: cacheConfigService.max,  // Número máximo de elementos
+    ttl: cacheConfigService.ttl, // Tiempo de vida en segundos
+    max: cacheConfigService.max, // Número máximo de elementos
     isGlobal: cacheConfigService.isGlobal,
   }),
   isGlobal: true,
-})
+});
 ```
 
 ## Casos de Uso Recomendados
@@ -75,17 +75,20 @@ CacheModule.registerAsync({
 El `HttpCacheInterceptor` es ideal para:
 
 ### 1. Datos Relativamente Estáticos
+
 - Catálogos de productos
 - Listas de categorías
 - Información de referencia (países, idiomas, etc.)
 - Contenido que no cambia frecuentemente
 
 ### 2. Operaciones Costosas
+
 - Consultas complejas a bases de datos
 - Agregaciones y cálculos intensivos
 - Datos que requieren múltiples peticiones a servicios externos
 
 ### 3. Información Pública
+
 - Contenido disponible sin autenticación
 - Datos que son iguales para todos los usuarios
 - Páginas de inicio y vistas generales
@@ -104,12 +107,12 @@ import { HttpCacheInterceptor } from '../common/interceptors/http-cache.intercep
 @Controller('productos')
 export class ProductosController {
   // Todos los endpoints en este controlador utilizarán caché
-  
+
   @Get()
   findAll() {
     return this.productosService.findAll();
   }
-  
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productosService.findOne(id);
@@ -131,7 +134,7 @@ export class ProductosController {
   findAll() {
     return this.productosService.findAll();
   }
-  
+
   // Este método no utilizará caché
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -143,15 +146,21 @@ export class ProductosController {
 ### Uso con Metadatos Adicionales (TTL Personalizado)
 
 ```typescript
-import { Controller, Get, UseInterceptors, CacheKey, CacheTTL } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  UseInterceptors,
+  CacheKey,
+  CacheTTL,
+} from '@nestjs/common';
 import { HttpCacheInterceptor } from '../common/interceptors/http-cache.interceptor';
 
 @Controller('productos')
 export class ProductosController {
   // Configuración personalizada de caché
   @UseInterceptors(HttpCacheInterceptor)
-  @CacheKey('productos_populares')  // Clave personalizada
-  @CacheTTL(3600)  // TTL de 1 hora en segundos
+  @CacheKey('productos_populares') // Clave personalizada
+  @CacheTTL(3600) // TTL de 1 hora en segundos
   @Get('populares')
   findPopulares() {
     return this.productosService.findPopulares();
@@ -210,4 +219,4 @@ export class CategoriasController {
     return this.categoriasService.findDestacadas();
   }
 }
-``` 
+```

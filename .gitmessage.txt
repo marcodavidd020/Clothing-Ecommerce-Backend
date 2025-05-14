@@ -1,0 +1,3 @@
+# Tipo: feat|fix|docs|style|refactor|test|chore  
+# Asunto: (Máx. 50 chars)  
+# Descripción: (Opcional)  

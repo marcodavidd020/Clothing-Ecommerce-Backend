@@ -47,11 +47,11 @@ authentication/
 
 ## Endpoints
 
-| Método | Ruta           | Descripción                  | Datos de entrada           | Respuesta                        |
-|--------|----------------|------------------------------|----------------------------|----------------------------------|
-| POST   | /auth/login    | Login y generación de tokens | `{ email, password }`      | `{ accessToken, refreshToken, expiresIn, tokenType }` |
-| POST   | /auth/refresh  | Renovar tokens               | `{ refreshToken }`         | `{ accessToken, refreshToken, expiresIn, tokenType }` |
-| GET    | /auth/profile  | Obtener perfil del usuario   | Token JWT (Authorization)  | Datos del usuario sin campos sensibles |
+| Método | Ruta          | Descripción                  | Datos de entrada          | Respuesta                                             |
+| ------ | ------------- | ---------------------------- | ------------------------- | ----------------------------------------------------- |
+| POST   | /auth/login   | Login y generación de tokens | `{ email, password }`     | `{ accessToken, refreshToken, expiresIn, tokenType }` |
+| POST   | /auth/refresh | Renovar tokens               | `{ refreshToken }`        | `{ accessToken, refreshToken, expiresIn, tokenType }` |
+| GET    | /auth/profile | Obtener perfil del usuario   | Token JWT (Authorization) | Datos del usuario sin campos sensibles                |
 
 ## Configuración
 
@@ -144,4 +144,4 @@ El sistema está diseñado para ser extensible:
 
 - Se puede agregar soporte para refresh tokens añadiendo los endpoints correspondientes
 - Es posible implementar autenticación con proveedores externos (OAuth, OIDC) mediante estrategias adicionales
-- La estructura permite añadir funcionalidades como bloqueo de cuenta tras intentos fallidos 
+- La estructura permite añadir funcionalidades como bloqueo de cuenta tras intentos fallidos

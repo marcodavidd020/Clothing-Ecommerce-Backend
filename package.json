@@ -6,7 +6,8 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "build": "nest build && npm run copy-docs",
+    "copy-docs": "mkdir -p dist/documentation && cp -r documentation/* dist/documentation/",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -24,7 +25,10 @@
     "migration:run": "npm run typeorm -- migration:run -d src/database/database.config.ts",
     "migration:revert": "npm run typeorm -- migration:revert -d src/database/database.config.ts",
     "seed": "ts-node -r tsconfig-paths/register src/database/seeder.ts",
-    "db:reset": "ts-node -r tsconfig-paths/register src/database/reset.ts"
+    "db:reset": "ts-node -r tsconfig-paths/register src/database/reset.ts",
+    "compodoc:gen": "compodoc -c compodoc.json -d docs --disableCoverage",
+    "compodoc:serve": "compodoc -c compodoc.json -s -d docs --disableCoverage",
+    "compodoc:watch": "compodoc -c compodoc.json -s -w -d docs --disableCoverage"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",
@@ -56,6 +60,7 @@
     "typeorm": "^0.3.22"
   },
   "devDependencies": {
+    "@compodoc/compodoc": "^1.1.26",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
     "@nestjs/cli": "^11.0.0",

@@ -16,9 +16,7 @@ import { CorrelationIdMiddleware } from '../common/middleware/correlation-id.mid
 @Module({})
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(CorrelationIdMiddleware)
-      .forRoutes('*'); // Para todas las rutas
+    consumer.apply(CorrelationIdMiddleware).forRoutes('*'); // Para todas las rutas
   }
 }
 ```
@@ -35,9 +33,7 @@ import { LoggingMiddleware } from '../common/middleware/logging.middleware';
 @Module({})
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(LoggingMiddleware)
-      .forRoutes('*'); // Para todas las rutas
+    consumer.apply(LoggingMiddleware).forRoutes('*'); // Para todas las rutas
   }
 }
 ```
@@ -68,9 +64,7 @@ export class AuthModule implements NestModule {
 Puedes aplicar varios middleware en secuencia:
 
 ```typescript
-consumer
-  .apply(CorrelationIdMiddleware, LoggingMiddleware)
-  .forRoutes('*');
+consumer.apply(CorrelationIdMiddleware, LoggingMiddleware).forRoutes('*');
 ```
 
 ### Excluir Rutas
@@ -82,7 +76,7 @@ consumer
   .apply(RateLimitMiddleware)
   .exclude(
     { path: 'health', method: RequestMethod.GET },
-    { path: 'metrics', method: RequestMethod.GET }
+    { path: 'metrics', method: RequestMethod.GET },
   )
   .forRoutes('*');
 ```
@@ -109,7 +103,12 @@ export class ConditionalMiddleware implements NestMiddleware {
 Para usar todos los middleware en tu aplicación, integra en el `AppModule`:
 
 ```typescript
-import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
+import {
+  Module,
+  NestModule,
+  MiddlewareConsumer,
+  RequestMethod,
+} from '@nestjs/common';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 import { LoggingMiddleware } from './common/middleware/logging.middleware';
 import { RateLimitMiddleware } from './common/middleware/rate-limit.middleware';
@@ -122,17 +121,16 @@ import { RateLimitMiddleware } from './common/middleware/rate-limit.middleware';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     // Middleware global para todas las rutas
-    consumer
-      .apply(CorrelationIdMiddleware, LoggingMiddleware)
-      .forRoutes('*');
-    
+    consumer.apply(CorrelationIdMiddleware, LoggingMiddleware).forRoutes('*');
+
     // Middleware de límite de tasa para rutas sensibles
     consumer
       .apply(RateLimitMiddleware)
       .exclude(
         { path: 'health', method: RequestMethod.GET },
-        { path: 'docs', method: RequestMethod.GET }
+        { path: 'docs', method: RequestMethod.GET },
       )
       .forRoutes('auth', 'api');
   }
-} 
+}
+```

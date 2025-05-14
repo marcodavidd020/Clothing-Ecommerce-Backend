@@ -114,15 +114,15 @@ export class YourService {
   async getItem(key: string): Promise<any> {
     // Intentar obtener datos de caché
     let item = await this.cacheManager.get(key);
-    
+
     if (!item) {
       // Si no está en caché, obtenerlo de su fuente original
       item = await this.fetchItemFromSource(key);
-      
+
       // Almacenar en caché para futuras peticiones
       await this.cacheManager.set(key, item);
     }
-    
+
     return item;
   }
 }
@@ -201,16 +201,15 @@ export class YourModule {}
 // Usar el servicio de correo
 @Injectable()
 export class YourService {
-  constructor(
-    private readonly mailerService: MailerService,
-  ) {}
+  constructor(private readonly mailerService: MailerService) {}
 
   async sendWelcomeEmail(user: any) {
     await this.mailerService.sendMail({
       to: user.email,
       subject: '¡Bienvenido a nuestra plataforma!',
       template: 'welcome', // Usar una plantilla Handlebars
-      context: { // Variables para la plantilla
+      context: {
+        // Variables para la plantilla
         name: user.name,
         activationLink: `https://example.com/activate?token=${user.activationToken}`,
       },
@@ -232,7 +231,7 @@ Por defecto, algunos proveedores están comentados para evitar la carga innecesa
     PostgresProviderModule,
     // MongoProviderModule, // Comentado para no cargar si no se usa
     // MySqlProviderModule, // Comentado para no cargar si no se usa
-    
+
     // Otros proveedores...
   ],
   exports: [
@@ -254,10 +253,7 @@ import { ConfigModule } from './config/config.module';
 import { ProvidersModule } from './providers/providers.module';
 
 @Module({
-  imports: [
-    ConfigModule,
-    ProvidersModule,
-  ],
+  imports: [ConfigModule, ProvidersModule],
   controllers: [AppController],
   providers: [AppService],
 })
@@ -301,4 +297,4 @@ Para facilitar las pruebas, es posible crear versiones mock de los proveedores q
   exports: [CACHE_MANAGER],
 })
 export class MockRedisCacheProviderModule {}
-``` 
+```

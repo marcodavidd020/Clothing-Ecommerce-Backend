@@ -60,3 +60,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 src/database/migrations/*.ts
 src/database/migrations/*.js
 !src/database/migrations/.gitkeep
+
+# Documentación
+docs

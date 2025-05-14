@@ -43,4 +43,4 @@ export const CurrentUser = createParamDecorator(
 );
 ```
 
-Este enfoque es más eficiente porque solo carga los datos cuando se necesitan. 
+Este enfoque es más eficiente porque solo carga los datos cuando se necesitan.
