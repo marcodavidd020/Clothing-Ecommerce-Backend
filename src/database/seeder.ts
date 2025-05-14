@@ -1,0 +1,52 @@
+import { NestFactory } from '@nestjs/core';
+import { UsersSeederService } from './seeders/users/seeder.service';
+import { AddressesSeederService } from './seeders/addresses/seeder.service';
+import { RolesSeeder } from './seeders/roles/roles.seeder';
+import { PermissionsSeeder } from './seeders/permissions/permissions.seeder';
+import { RolePermissionsSeeder } from './seeders/roles/role-permissions.seeder';
+import { UserRolesSeeder } from './seeders/users/user-roles.seeder';
+import { DatabaseModule } from './database.module';
+import { Logger } from '@nestjs/common';
+
+async function bootstrap() {
+  const logger = new Logger('Seeder');
+  logger.log('Iniciando proceso de seed...');
+
+  const appContext = await NestFactory.createApplicationContext(DatabaseModule);
+
+  try {
+    // Ejecutar los seeders en orden (primero roles y permisos, luego asignaciones, luego usuarios)
+    logger.log('Ejecutando seeder de permisos...');
+    const permissionsSeeder = appContext.get(PermissionsSeeder);
+    await permissionsSeeder.seed();
+
+    logger.log('Ejecutando seeder de roles...');
+    const rolesSeeder = appContext.get(RolesSeeder);
+    await rolesSeeder.seed();
+
+    logger.log('Ejecutando seeder de asignaciones de roles y permisos...');
+    const rolePermissionsSeeder = appContext.get(RolePermissionsSeeder);
+    await rolePermissionsSeeder.seed();
+
+    logger.log('Ejecutando seeder de usuarios...');
+    const usersSeederService = appContext.get(UsersSeederService);
+    await usersSeederService.seed();
+
+    logger.log('Ejecutando seeder de relaciones entre usuarios y roles...');
+    const userRolesSeeder = appContext.get(UserRolesSeeder);
+    await userRolesSeeder.seed();
+
+    logger.log('Ejecutando seeder de direcciones...');
+    const addressesSeederService = appContext.get(AddressesSeederService);
+    await addressesSeederService.seed();
+
+    logger.log('Proceso de seed completado exitosamente!');
+  } catch (error) {
+    logger.error(`Error durante el proceso de seed: ${error.message}`);
+    logger.error(error.stack);
+  } finally {
+    await appContext.close();
+  }
+}
+
+bootstrap();
