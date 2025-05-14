@@ -10,11 +10,15 @@ import { UniqueUserEmail } from '../../../common/decorators/validations/UniqueUs
 
 /**
  * DTO para la creación de usuarios
+ * 
+ * Este DTO se utiliza para validar y documentar los datos necesarios al registrar 
+ * un nuevo usuario en el sistema de ecommerce.
  */
 export class CreateUserDto {
   @ApiProperty({
-    example: 'usuario@ejemplo.com',
-    description: 'Email único del usuario',
+    example: 'cliente@tienda.com',
+    description: 'Correo electrónico del usuario. Debe ser único en el sistema y se utilizará como identificador para iniciar sesión.',
+    required: true
   })
   @IsEmail()
   @IsNotEmpty()
@@ -22,8 +26,9 @@ export class CreateUserDto {
   email: string;
 
   @ApiProperty({
-    example: 'Juan',
-    description: 'Nombre del usuario',
+    example: 'María',
+    description: 'Nombre del usuario. Se utilizará para personalizar comunicaciones y mostrar en el perfil.',
+    required: true,
     minLength: 2,
   })
   @IsNotEmpty()
@@ -32,8 +37,9 @@ export class CreateUserDto {
   firstName: string;
 
   @ApiProperty({
-    example: 'Pérez',
-    description: 'Apellido del usuario',
+    example: 'González',
+    description: 'Apellido del usuario. Se utilizará junto con el nombre para identificar al usuario en el sistema.',
+    required: true,
     minLength: 2,
   })
   @IsNotEmpty()
@@ -42,25 +48,27 @@ export class CreateUserDto {
   lastName: string;
 
   @ApiProperty({
-    example: 'contraseña123',
-    description: 'Contraseña del usuario',
+    example: 'C0ntr4s3ña$3gur4',
+    description: 'Contraseña para acceder al sistema. Debe tener al menos 6 caracteres. Se recomienda incluir mayúsculas, minúsculas, números y símbolos.',
+    required: true,
     minLength: 6,
+    format: 'password'
   })
   @IsNotEmpty()
   @MinLength(6)
   password: string;
 
   @ApiPropertyOptional({
-    example: '+34600000000',
-    description: 'Teléfono del usuario',
+    example: '+34612345678',
+    description: 'Número de teléfono del usuario. Se utilizará para contacto y/o recuperación de cuenta.',
   })
   @IsOptional()
   @IsString()
   phone?: string;
 
   @ApiPropertyOptional({
-    example: 'https://ejemplo.com/avatar.jpg',
-    description: 'URL del avatar del usuario',
+    example: 'https://cdn.tienda.com/avatars/usuario1.jpg',
+    description: 'URL de la imagen de perfil del usuario. Si no se proporciona, se asignará un avatar predeterminado.',
   })
   @IsOptional()
   avatar?: string;

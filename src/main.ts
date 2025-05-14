@@ -30,8 +30,10 @@ async function bootstrap() {
 
   // Configuración de Swagger
   const config = new DocumentBuilder()
-    .setTitle('NestJS API')
-    .setDescription('API de la estructura base de NestJS')
+    .setTitle('API de Ecommerce')
+    .setDescription(
+      'API completa para la plataforma de ecommerce. Esta API permite gestionar usuarios, productos, categorías, carrito de compras, pedidos y pagos. El sistema incluye autenticación JWT y gestión de roles y permisos.',
+    )
     .setVersion('1.0')
     .addBearerAuth(
       {

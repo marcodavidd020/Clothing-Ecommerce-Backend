@@ -21,6 +21,8 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiQuery,
+  ApiBody,
+  ApiParam,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UserSerializer } from './serializers/user.serializer';
@@ -61,10 +63,15 @@ import { UserPermissionsEnum } from 'src/common/constants/permissions.enum';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @ApiOperation({ summary: 'Obtener todos los usuarios' })
+  @ApiOperation({
+    summary: 'Obtener todos los usuarios',
+    description:
+      'Retorna un listado de usuarios registrados en el sistema. Los resultados pueden ser paginados utilizando los parámetros "page" y "limit". Solo administradores pueden acceder a esta información.',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Lista de usuarios (con o sin paginación)',
+    description:
+      'Lista de usuarios (con o sin paginación). Incluye información básica de cada usuario como nombre, email, estado, etc.',
     schema: paginatedResponseSchema('#/components/schemas/UserSerializer'),
   })
   @ApiQuery(paginationQueryParams[0]) // page
@@ -93,10 +100,15 @@ export class UsersController {
     );
   }
 
-  @ApiOperation({ summary: 'Buscar usuarios' })
+  @ApiOperation({
+    summary: 'Buscar usuarios',
+    description:
+      'Permite buscar usuarios usando un término de búsqueda. La búsqueda se realiza por nombre, apellido y email. Los resultados pueden ser paginados.',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Resultados de búsqueda de usuarios',
+    description:
+      'Resultados de búsqueda paginados con los usuarios que coinciden con el criterio.',
     schema: paginatedResponseSchema('#/components/schemas/UserSerializer'),
   })
   @ApiQuery(searchQueryParam)
@@ -114,13 +126,26 @@ export class UsersController {
     );
   }
 
-  @ApiOperation({ summary: 'Obtener usuario por ID' })
+  @ApiOperation({
+    summary: 'Obtener usuario por ID',
+    description:
+      'Retorna los detalles de un usuario específico identificado por su ID único en el sistema.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID único del usuario que se desea consultar',
+    type: String,
+  })
   @ApiResponse({
     status: 200,
-    description: 'Usuario encontrado',
+    description: 'Detalles completos del usuario encontrado',
     type: UserSerializer,
   })
-  @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
+  @ApiResponse({
+    status: 404,
+    description:
+      'Usuario no encontrado. El ID proporcionado no corresponde a ningún usuario registrado.',
+  })
   @RequirePermissions(UserPermissionsEnum.VIEW)
   @Get(':id')
   async findById(
@@ -141,14 +166,31 @@ export class UsersController {
     }
   }
 
-  @ApiOperation({ summary: 'Crear nuevo usuario' })
+  @ApiOperation({
+    summary: 'Crear nuevo usuario',
+    description:
+      'Permite crear un nuevo usuario en el sistema. La contraseña será encriptada automáticamente.',
+  })
+  @ApiBody({
+    description: 'Datos necesarios para crear un usuario',
+    type: CreateUserDto,
+  })
   @ApiResponse({
     status: 201,
-    description: 'Usuario creado',
+    description:
+      'Usuario creado exitosamente. Retorna los datos del usuario creado (sin la contraseña).',
     type: UserSerializer,
   })
-  @ApiResponse({ status: 400, description: 'Datos inválidos' })
-  @ApiResponse({ status: 409, description: 'Email ya está en uso' })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Datos inválidos. Revise los campos requeridos y sus formatos.',
+  })
+  @ApiResponse({
+    status: 409,
+    description:
+      'El email ya está registrado. No se permiten emails duplicados en el sistema.',
+  })
   @RequirePermissions(UserPermissionsEnum.CREATE)
   @Post()
   async create(
@@ -180,13 +222,31 @@ export class UsersController {
     }
   }
 
-  @ApiOperation({ summary: 'Actualizar usuario' })
+  @ApiOperation({
+    summary: 'Actualizar usuario',
+    description:
+      'Actualiza los datos de un usuario existente. Si se proporciona una nueva contraseña, ésta será encriptada automáticamente.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID único del usuario a actualizar',
+    type: String,
+  })
+  @ApiBody({
+    description: 'Datos a actualizar del usuario',
+    type: UpdateUserDto,
+  })
   @ApiResponse({
     status: 200,
-    description: 'Usuario actualizado',
+    description:
+      'Usuario actualizado correctamente. Retorna los datos actualizados.',
     type: UserSerializer,
   })
-  @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
+  @ApiResponse({
+    status: 404,
+    description:
+      'Usuario no encontrado. El ID proporcionado no corresponde a ningún usuario existente.',
+  })
   @RequirePermissions(UserPermissionsEnum.UPDATE)
   @Put(':id')
   async update(
@@ -204,9 +264,25 @@ export class UsersController {
     );
   }
 
-  @ApiOperation({ summary: 'Eliminar usuario' })
-  @ApiResponse({ status: 204, description: 'Usuario eliminado' })
-  @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
+  @ApiOperation({
+    summary: 'Eliminar usuario',
+    description:
+      'Elimina permanentemente a un usuario del sistema. Esta acción no puede deshacerse.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID único del usuario a eliminar',
+    type: String,
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'Usuario eliminado correctamente. No se devuelve contenido.',
+  })
+  @ApiResponse({
+    status: 404,
+    description:
+      'Usuario no encontrado. El ID proporcionado no existe en el sistema.',
+  })
   @RequirePermissions(UserPermissionsEnum.DELETE)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
