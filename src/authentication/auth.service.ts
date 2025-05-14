@@ -295,4 +295,41 @@ export class AuthService {
       return false;
     }
   }
+
+  /**
+   * Registrar nuevo cliente
+   */
+  async registerClient(createUserDto: CreateUserDto): Promise<UserSerializer> {
+    try {
+      const user = await this.usersService.create(createUserDto);
+
+      // Asignar rol de cliente al nuevo usuario
+      await this.assignClientRole(user.id);
+
+      return user;
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+      this.logger.error(`Error registrando cliente: ${error.message}`);
+      throw new ConflictException('No se pudo crear el cliente');
+    }
+  }
+
+  /**
+   * Asignar rol de cliente a un usuario
+   */
+  private async assignClientRole(userId: string): Promise<void> {
+    try {
+      const clientRole = await this.rolesService.findBySlug('client');
+      if (!clientRole) {
+        this.logger.warn('No se encontró el rol "client" para asignar');
+        return;
+      }
+
+      await this.rolesService.assignRoleToUser(userId, clientRole.id);
+    } catch (error) {
+      this.logger.error(`Error asignando rol de cliente: ${error.message}`);
+    }
+  }
 }

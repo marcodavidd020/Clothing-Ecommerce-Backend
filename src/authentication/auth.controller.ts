@@ -25,8 +25,13 @@ import { UserSerializer } from '../models/users/serializers/user.serializer';
 import { LoggedInUser } from '../common/decorators/requests/logged-in-user.decorator';
 import { IJwtUser } from './interfaces/jwt-user.interface';
 import { createSuccessResponse } from '../common/helpers/responses/success.helper';
-import { createUnauthorizedResponse } from '../common/helpers/responses/error.helper';
+import {
+  createNotFoundResponse,
+  createUnauthorizedResponse,
+} from '../common/helpers/responses/error.helper';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { CreateUserDto } from '../models/users/dto/create-user.dto';
+import { ISuccessResponse } from '../common/interfaces/response.interface';
 
 @ApiTags('Autenticación')
 @Controller('auth')
@@ -73,7 +78,10 @@ export class AuthController {
     description: 'Perfil recuperado con éxito',
     type: UserSerializer,
   })
-  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado',
+  })
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard)
   @Get('profile')
@@ -81,10 +89,7 @@ export class AuthController {
     try {
       // Obtenemos los datos del usuario a partir del ID en el token JWT
       const profile = await this.authService.getProfile(user.id);
-      return createSuccessResponse(
-        profile,
-        'Perfil recuperado exitosamente',
-      );
+      return createSuccessResponse(profile, 'Perfil recuperado exitosamente');
     } catch (error) {
       if (
         error instanceof UnauthorizedException ||
@@ -135,5 +140,33 @@ export class AuthController {
         ),
       );
     }
+  }
+
+  /**
+   * Registrar nuevo cliente (endpoint público)
+   */
+  @ApiOperation({
+    summary: 'Registrar cliente',
+    description: 'Crea un nuevo usuario con rol de cliente',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Cliente registrado correctamente',
+    type: UserSerializer,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Datos de registro inválidos',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'El email ya está en uso',
+  })
+  @Post('register/client')
+  async registerClient(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<ISuccessResponse<UserSerializer>> {
+    const user = await this.authService.registerClient(createUserDto);
+    return createSuccessResponse(user, 'Cliente registrado correctamente');
   }
 }

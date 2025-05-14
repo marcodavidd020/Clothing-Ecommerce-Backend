@@ -49,6 +49,7 @@ export const USER_TYPES = {
   USER: 'user',
   EDITOR: 'editor',
   MANAGER: 'manager',
+  CLIENT: 'client',
 };
 
 // Roles accesibles por defecto (para uso con @UserTypes decorator)

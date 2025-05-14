@@ -36,6 +36,10 @@ export class RolesSeeder {
         name: 'Gestor',
         slug: 'manager',
       },
+      {
+        name: 'Cliente',
+        slug: 'client',
+      },
     ];
 
     for (const roleData of roles) {
