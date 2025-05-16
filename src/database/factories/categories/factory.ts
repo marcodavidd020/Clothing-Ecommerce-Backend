@@ -8,10 +8,12 @@ export class CategoryFactory {
   public generate(baseOverrides?: Partial<Category>): Partial<Category> {
     const name = baseOverrides?.name || faker.commerce.department();
     const slug = baseOverrides?.slug || slugify(name);
+    const image = baseOverrides?.image || faker.image.urlPicsumPhotos();
 
     return {
       name: name,
       slug: slug,
+      image: image,
       // El campo 'parent' se manejará directamente en el seeder
       ...baseOverrides,
     };

@@ -2,18 +2,21 @@ export interface ICategory {
   id: string;
   name: string;
   slug: string;
-  parent?: ICategory; // Opcional para categorías raíz
-  children?: ICategory[]; // Lista de categorías hijas
+  image?: string | null;
+  parentId?: string | null;
+  children?: ICategory[];
 }
 
 export interface ICategoryCreate {
   name: string;
   slug: string;
-  parentId?: string; // Para asignar una categoría padre al crear
+  image?: string | null;
+  parentId?: string;
 }
 
 export interface ICategoryUpdate {
   name?: string;
   slug?: string;
-  parentId?: string | null; // Para cambiar la categoría padre o eliminarla
+  image?: string | null;
+  parentId?: string | null;
 }

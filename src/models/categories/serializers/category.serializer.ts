@@ -1,4 +1,4 @@
-import { Exclude, Expose, Type } from 'class-transformer';
+import { Exclude, Expose, Type, Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { Category } from '../entities/category.entity';
 import { ModelSerializer } from '../../common/serializers/model.serializer';
@@ -24,6 +24,9 @@ export class CategorySerializer extends ModelSerializer {
   })
   @Expose()
   slug: string;
+
+  @Expose()
+  image?: string | null;
 
   @Exclude() // Excluimos el padre para evitar referencias circulares por defecto
   parent: Category;

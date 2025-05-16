@@ -228,18 +228,84 @@ export class CategoriesRepository extends ModelRepository<
 
   /**
    * Encuentra el ancestro raíz de una categoría dada.
+   * Versión manual y robusta que navega explícitamente por la jerarquía de padres.
    */
   async findRootAncestor(category: Category): Promise<Category> {
-    const ancestors = await this.categoryRepository.findAncestors(category);
-    // findAncestors(entity) devuelve [entity, parent, grandparent, ...], la raíz es la última.
-    // Si la entidad es una raíz, devuelve [entity].
-    if (ancestors.length > 0) {
-      return ancestors[ancestors.length - 1];
-    }
-    this.logger.warn(
-      `No ancestors found for category ID ${category.id}, returning category itself as root.`,
+    this.logger.debug(
+      `Buscando raíz para categoría ID: ${category.id}, nombre: ${category.name}`,
     );
-    return category;
+
+    // Si no tiene parent, intentamos cargar la entidad completa con relaciones
+    if (!category.parent) {
+      this.logger.debug(
+        `La categoría ${category.id} no tiene parent cargado. Intentando cargar relaciones...`,
+      );
+      const withParent = await this.getRawByIdWithRelations(category.id, [
+        'parent',
+      ]);
+      if (withParent && withParent.parent) {
+        category = withParent; // Usar la versión con parent cargado
+        this.logger.debug(
+          `Parent cargado correctamente: ${withParent.parent.id}`,
+        );
+      } else {
+        this.logger.debug(
+          `La categoría ${category.id} no tiene parent, es una raíz.`,
+        );
+        return category; // No tiene parent, es una raíz
+      }
+    }
+
+    // Si llegamos aquí, category.parent debería existir y no ser null
+    if (!category.parent) {
+      // Por si acaso, una verificación adicional
+      return category;
+    }
+
+    this.logger.debug(
+      `La categoría ${category.id} tiene parent: ${category.parent.id}`,
+    );
+
+    // Necesitamos subir por la jerarquía hasta encontrar una categoría sin parent
+    let current = category;
+    let depth = 0; // Para evitar bucles infinitos por precaución
+    const MAX_DEPTH = 50; // Ajustar según la profundidad máxima esperada
+
+    while (current.parent && depth < MAX_DEPTH) {
+      const parentId = current.parent.id; // Guardar el ID para los logs
+      this.logger.debug(`Subiendo desde ${current.id} a su parent ${parentId}`);
+
+      // Cargar el parent con su propio parent para la siguiente iteración
+      const parentWithGrandparent = await this.getRawByIdWithRelations(
+        parentId,
+        ['parent'],
+      );
+
+      if (!parentWithGrandparent) {
+        this.logger.warn(
+          `No se pudo cargar el parent ${parentId} de ${current.id}. Deteniendo.`,
+        );
+        break;
+      }
+
+      current = parentWithGrandparent;
+      depth++;
+
+      if (!current.parent) {
+        this.logger.debug(
+          `Encontrada raíz: ${current.id} (${current.name}) después de ${depth} iteraciones.`,
+        );
+        break;
+      }
+    }
+
+    if (depth >= MAX_DEPTH) {
+      this.logger.warn(
+        `¡Alcanzada profundidad máxima (${MAX_DEPTH}) buscando la raíz! Posible ciclo o jerarquía muy profunda.`,
+      );
+    }
+
+    return current;
   }
 
   /**
