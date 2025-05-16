@@ -14,6 +14,7 @@ import {
   Query,
   UseGuards,
   UseInterceptors,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -36,9 +37,11 @@ import { IPaginatedResult } from '../../common/interfaces/pagination.interface';
 import { ProductPermissionsEnum } from './constants/product-permissions.constant';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { ApplyDiscountPercentageDto } from './dto/apply-discount-percentage.dto';
+import { ApplyFixedDiscountDto } from './dto/apply-fixed-discount.dto';
+import { ChangeProductStockDto } from './dto/change-product-stock.dto';
 import { ProductsService } from './products.service';
 import { ProductSerializer } from './serializers/product.serializer';
-import { Product } from './entities/product.entity';
 
 @ApiTags('Productos')
 @ApiBearerAuth('JWT-auth')
@@ -72,7 +75,7 @@ export class ProductsController {
   })
   async findAll(
     @Query() paginationDto: PaginationDto,
-  ): Promise<Product[] | IPaginatedResult<Product>> {
+  ): Promise<ProductSerializer[] | IPaginatedResult<ProductSerializer>> {
     if (paginationDto.page || paginationDto.limit) {
       return this.productsService.findPaginated({
         page: paginationDto.page || 1,
@@ -93,7 +96,7 @@ export class ProductsController {
     type: ProductSerializer,
   })
   @ApiResponse({ status: 404, description: 'Producto no encontrado' })
-  async findById(@Param('id', ParseUUIDPipe) id: string): Promise<Product> {
+  async findById(@Param('id', ParseUUIDPipe) id: string): Promise<ProductSerializer> {
     return this.productsService.findById(id);
   }
 
@@ -107,7 +110,7 @@ export class ProductsController {
     type: ProductSerializer,
   })
   @ApiResponse({ status: 404, description: 'Producto no encontrado' })
-  async findBySlug(@Param('slug') slug: string): Promise<Product> {
+  async findBySlug(@Param('slug') slug: string): Promise<ProductSerializer> {
     const product = await this.productsService.findBySlug(slug);
     if (!product) {
       throw new NotFoundException(`Producto con slug ${slug} no encontrado`);
@@ -124,7 +127,7 @@ export class ProductsController {
     description: 'Producto creado exitosamente',
     type: ProductSerializer,
   })
-  async create(@Body() createProductDto: CreateProductDto): Promise<Product> {
+  async create(@Body() createProductDto: CreateProductDto): Promise<ProductSerializer> {
     return this.productsService.create(createProductDto);
   }
 
@@ -142,7 +145,7 @@ export class ProductsController {
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateProductDto: UpdateProductDto,
-  ): Promise<Product> {
+  ): Promise<ProductSerializer> {
     const updatedProduct = await this.productsService.update(
       id,
       updateProductDto,
@@ -162,5 +165,63 @@ export class ProductsController {
   @ApiResponse({ status: 404, description: 'Producto no encontrado' })
   async delete(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.productsService.delete(id);
+  }
+
+  // Endpoints para descuentos y stock
+  @Patch(':id/discount/percentage')
+  @RequirePermissions(ProductPermissionsEnum.PRODUCT_UPDATE)
+  @ApiOperation({ summary: 'Aplicar un descuento porcentual al producto' })
+  @ApiParam({ name: 'id', description: 'ID del producto', type: String })
+  @ApiBody({ type: ApplyDiscountPercentageDto })
+  @ApiResponse({ status: 200, description: 'Descuento porcentual aplicado', type: ProductSerializer })
+  @ApiResponse({ status: 404, description: 'Producto no encontrado' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  async applyDiscountPercentage(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ApplyDiscountPercentageDto,
+  ): Promise<ProductSerializer> {
+    return this.productsService.applyDiscountPercentage(id, dto);
+  }
+
+  @Patch(':id/discount/fixed')
+  @RequirePermissions(ProductPermissionsEnum.PRODUCT_UPDATE)
+  @ApiOperation({ summary: 'Aplicar un descuento de monto fijo al producto' })
+  @ApiParam({ name: 'id', description: 'ID del producto', type: String })
+  @ApiBody({ type: ApplyFixedDiscountDto })
+  @ApiResponse({ status: 200, description: 'Descuento fijo aplicado', type: ProductSerializer })
+  @ApiResponse({ status: 404, description: 'Producto no encontrado' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  async applyFixedDiscount(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ApplyFixedDiscountDto,
+  ): Promise<ProductSerializer> {
+    return this.productsService.applyFixedDiscount(id, dto);
+  }
+
+  @Patch(':id/discount/remove')
+  @RequirePermissions(ProductPermissionsEnum.PRODUCT_UPDATE)
+  @ApiOperation({ summary: 'Remover descuento del producto' })
+  @ApiParam({ name: 'id', description: 'ID del producto', type: String })
+  @ApiResponse({ status: 200, description: 'Descuento removido', type: ProductSerializer })
+  @ApiResponse({ status: 404, description: 'Producto no encontrado' })
+  async removeDiscount(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ProductSerializer> {
+    return this.productsService.removeDiscount(id);
+  }
+
+  @Patch(':id/stock')
+  @RequirePermissions(ProductPermissionsEnum.PRODUCT_UPDATE)
+  @ApiOperation({ summary: 'Cambiar el stock de un producto' })
+  @ApiParam({ name: 'id', description: 'ID del producto', type: String })
+  @ApiBody({ type: ChangeProductStockDto })
+  @ApiResponse({ status: 200, description: 'Stock actualizado', type: ProductSerializer })
+  @ApiResponse({ status: 404, description: 'Producto no encontrado' })
+  @ApiResponse({ status: 400, description: 'Cantidad inválida o stock resultante negativo' })
+  async changeStock(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ChangeProductStockDto,
+  ): Promise<ProductSerializer> {
+    return this.productsService.changeStock(id, dto);
   }
 }

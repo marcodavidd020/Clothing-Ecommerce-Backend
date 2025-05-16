@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ModelSerializer } from '../../common/serializers/model.serializer';
 
 export class ProductVariantSerializer extends ModelSerializer {
