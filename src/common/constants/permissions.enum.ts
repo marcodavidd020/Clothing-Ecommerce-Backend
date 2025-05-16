@@ -1,3 +1,4 @@
+import { CartPermissions } from 'src/models/carts/constants/cart-permissions';
 import { ProductPermissions } from 'src/models/products/constants/product-permissions.constant';
 
 /**
@@ -233,6 +234,7 @@ export const ALL_PERMISSIONS = {
   ADDRESS: AddressPermissions,
   CATEGORY: CategoryPermissions,
   PRODUCT: ProductPermissions,
+  CART: CartPermissions,
 };
 
 /**
@@ -246,4 +248,5 @@ export const PERMISSIONS_LIST: Permission[] = [
   ...Object.values(AddressPermissions),
   ...Object.values(CategoryPermissions),
   ...Object.values(ProductPermissions),
+  ...Object.values(CartPermissions),
 ];

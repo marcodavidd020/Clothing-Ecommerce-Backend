@@ -50,6 +50,17 @@ export class ModelRepository<
   }
 
   /**
+   * Obtener una entidad cruda (sin serializar) por ID
+   */
+  async findRawById(id: string, relations: string[] = []): Promise<T | null> {
+    const entity = await this.repository.findOne({
+      where: { id } as unknown as FindOptionsWhere<T>,
+      relations: relations as unknown as FindOptionsRelations<T>,
+    });
+    return entity;
+  }
+
+  /**
    * Obtener un registro por un criterio
    */
   protected async getBy(
