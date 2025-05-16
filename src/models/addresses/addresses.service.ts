@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { AddressesRepository } from './repositories/addresses.repository';
 import { AddressSerializer } from './serializers/address.serializer';
 import { CreateAddressDto } from './dto/create-address.dto';
@@ -7,10 +11,19 @@ import {
   IPaginatedResult,
   IPaginationOptions,
 } from '../../common/interfaces/pagination.interface';
-
+import { UsersRepository } from '../users/repositories/users.repository';
+import {
+  createBadRequestResponse,
+  createNotFoundResponse,
+} from 'src/common/helpers/responses/error.helper';
+import { Logger } from '@nestjs/common';
 @Injectable()
 export class AddressesService {
-  constructor(private readonly addressesRepository: AddressesRepository) {}
+  private readonly logger = new Logger(AddressesService.name);
+  constructor(
+    private readonly addressesRepository: AddressesRepository,
+    private readonly usersRepository: UsersRepository,
+  ) {}
 
   async findAll(): Promise<AddressSerializer[]> {
     return this.addressesRepository.findAll();
@@ -20,25 +33,46 @@ export class AddressesService {
     options: IPaginationOptions,
     userId?: string,
   ): Promise<IPaginatedResult<AddressSerializer>> {
-    if (userId) {
-      return this.addressesRepository.paginateBy(
-        { user: { id: userId } },
-        options,
-        ['user'],
+    try {
+      if (userId) {
+        await this.findByUserId(userId);
+        return this.addressesRepository.paginateBy(
+          { user: { id: userId } },
+          options,
+          ['user'],
+        );
+      } else {
+        return this.addressesRepository.paginate(options, ['user']);
+      }
+    } catch (error) {
+      this.logger.error(
+        `Error al obtener las direcciones: ${error.message}`,
+        error.stack,
       );
+      throw error;
     }
-    return this.addressesRepository.paginate(options, ['user']);
   }
 
   async findById(id: string): Promise<AddressSerializer> {
     const address = await this.addressesRepository.findById(id);
     if (!address) {
-      throw new NotFoundException(`Address with ID ${id} not found`);
+      throw new NotFoundException(createNotFoundResponse('Dirección'));
     }
     return address;
   }
 
   async findByUserId(userId: string): Promise<AddressSerializer[]> {
+    if (!userId) {
+      throw new BadRequestException(
+        createBadRequestResponse('User ID is required'),
+      );
+    }
+
+    const user = await this.usersRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundException(createNotFoundResponse('User'));
+    }
+
     return this.addressesRepository.findByUserId(userId);
   }
 

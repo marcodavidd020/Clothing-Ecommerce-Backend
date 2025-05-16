@@ -1,0 +1,165 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Paginación y Filtrado de Datos
+
+El proyecto implementa un sistema estandarizado de paginación y filtrado para facilitar el consumo de grandes conjuntos de datos.
+
+## Paginación
+
+### DTOs de Paginación
+
+La paginación se implementa principalmente a través de DTOs como:
+* **[pagination.dto.ts](mdc:src/common/dto/pagination.dto.ts)**: Define los parámetros de consulta para la paginación.
+
+```typescript
+export class PaginationDto {
+  @ApiPropertyOptional({ description: 'Número de página (iniciando en 1)', default: 1 })
+  @Transform(({ value }) => parseInt(value))
+  @IsNumber()
+  @IsOptional()
+  page?: number = 1;
+
+  @ApiPropertyOptional({ description: 'Elementos por página', default: 10 })
+  @Transform(({ value }) => parseInt(value))
+  @IsNumber()
+  @IsOptional()
+  limit?: number = 10;
+}
+```
+
+### Interfaces de Paginación
+
+Las interfaces que definen la estructura del resultado paginado están en [pagination.interface.ts](mdc:src/common/interfaces/pagination.interface.ts):
+
+```typescript
+export interface IPaginationMeta {
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export interface IPaginatedResult<T> {
+  data: T[];
+  pagination: IPaginationMeta;
+}
+
+export interface IPaginationOptions {
+  page?: number;
+  limit?: number;
+}
+```
+
+### Helpers de Paginación
+
+La creación de respuestas paginadas consistentes se maneja a través de [pagination.helper.ts](mdc:src/common/helpers/responses/pagination.helper.ts):
+
+```typescript
+export function createPaginatedResponse<T>(
+  paginatedResult: IPaginatedResult<T>,
+  message: string = 'Datos recuperados exitosamente',
+): ISuccessResponse<T[]> {
+  return {
+    status: 'success',
+    message,
+    data: paginatedResult.data,
+    pagination: paginatedResult.pagination,
+  };
+}
+```
+
+## Implementación en el Repositorio
+
+La lógica de paginación se implementa generalmente en los repositorios, posiblemente en el `ModelRepository` base:
+
+```typescript
+async paginate(
+  options: IPaginationOptions,
+  relations: string[] = [],
+): Promise<IPaginatedResult<TSerializer>> {
+  const page = options.page || 1;
+  const limit = options.limit || 10;
+  const skip = (page - 1) * limit;
+
+  const [entities, totalItems] = await this.repository.findAndCount({
+    skip,
+    take: limit,
+    relations,
+  });
+
+  const totalPages = Math.ceil(totalItems / limit);
+
+  return {
+    data: this.transformMany(entities),
+    pagination: {
+      totalItems,
+      totalPages,
+      currentPage: page,
+      pageSize: limit,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+    },
+  };
+}
+```
+
+## Uso en Controladores
+
+Los controladores utilizan los DTOs de paginación para recibir parámetros de consulta y luego pasan esos parámetros a los servicios/repositorios:
+
+```typescript
+@Get()
+async findAll(@Query() paginationDto: PaginationDto): Promise<ISuccessResponse<UserSerializer[]>> {
+  if (paginationDto?.page || paginationDto?.limit) {
+    const paginatedResult = await this.usersService.findPaginated(paginationDto);
+    return createPaginatedResponse(paginatedResult, 'Usuarios recuperados exitosamente');
+  }
+  
+  const users = await this.usersService.findAll();
+  return createSuccessResponse(users, 'Usuarios recuperados exitosamente');
+}
+```
+
+## Filtrado y Búsqueda
+
+Además de la paginación, el proyecto probablemente implementa filtrado y búsqueda:
+
+*   **[search.dto.ts](mdc:src/common/dto/search.dto.ts)**: DTO que extiende `PaginationDto` agregando parámetros de búsqueda.
+
+```typescript
+export class SearchDto extends PaginationDto {
+  @ApiPropertyOptional({ description: 'Término de búsqueda' })
+  @IsString()
+  @IsOptional()
+  q?: string;
+  
+  // Otros parámetros de filtrado...
+}
+```
+
+*   **Implementación en repositorios**: Métodos como `search()` en repositorios específicos que manejan la lógica de búsqueda.
+
+```typescript
+async search(query: string, options: IPaginationOptions): Promise<IPaginatedResult<TSerializer>> {
+  const queryBuilder = this.repository.createQueryBuilder('entity');
+  
+  // Lógica de búsqueda...
+  queryBuilder.where('entity.name LIKE :query', { query: `%${query}%` });
+  
+  // Paginación...
+  const page = options.page || 1;
+  const limit = options.limit || 10;
+  queryBuilder.skip((page - 1) * limit).take(limit);
+  
+  const [entities, totalItems] = await queryBuilder.getManyAndCount();
+  
+  // Resto de la lógica similar a paginate()...
+}
+```
+
+Este sistema de paginación y filtrado proporciona una forma consistente y eficiente de manejar grandes conjuntos de datos en la API.

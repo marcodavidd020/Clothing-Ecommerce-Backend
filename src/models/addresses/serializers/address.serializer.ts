@@ -1,7 +1,8 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { ModelSerializer } from '../../common/serializers/model.serializer';
 import { Address } from '../entities/address.entity';
+import { UserSerializer } from 'src/models/users/serializers/user.serializer';
 
 export class AddressSerializer extends ModelSerializer {
   @ApiProperty({
@@ -67,8 +68,10 @@ export class AddressSerializer extends ModelSerializer {
   @Expose()
   isDefault: boolean;
 
-  @Exclude()
-  user: any;
+  @Expose()
+  @Type(() => UserSerializer)
+  @ApiProperty({ type: () => UserSerializer, description: 'Usuario propietario de la dirección' })
+  user: UserSerializer;
 
   @ApiProperty({
     example: '550e8400-e29b-41d4-a716-446655440000',

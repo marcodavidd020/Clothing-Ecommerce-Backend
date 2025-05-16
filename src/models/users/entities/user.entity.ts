@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { type Address } from '../../../models'; // Importar solo el tipo para evitar circular refs
+import { Address } from '../../../models/addresses/entities/address.entity';
 import { UserRole } from '../../roles/entities/user-role.entity';
 
 @Entity('users')
@@ -38,7 +38,7 @@ export class User {
   @Column('text', { array: true, nullable: true })
   roles: string[];
 
-  @OneToMany('Address', 'user')
+  @OneToMany(() => Address, (address) => address.user)
   addresses: Address[];
 
   @OneToMany(() => UserRole, (userRole) => userRole.user)

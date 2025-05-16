@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../entities/user.entity';
 import { ModelSerializer } from '../../common/serializers/model.serializer';
 import { RoleSerializer } from '../../roles/serializers/role.serializer';
+import { AddressSerializer } from '../../addresses/serializers/address.serializer';
 
 export class UserSerializer extends ModelSerializer {
   @ApiProperty({
@@ -57,7 +58,8 @@ export class UserSerializer extends ModelSerializer {
     description: 'Direcciones asociadas al usuario',
   })
   @Expose()
-  addresses: any[];
+  @Type(() => AddressSerializer)
+  addresses: AddressSerializer[];
 
   @ApiProperty({
     type: 'array',

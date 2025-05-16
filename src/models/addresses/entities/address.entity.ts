@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
 } from 'typeorm';
-import { type User } from '../../../models';
+import { User } from '../../../models/users/entities/user.entity';
 
 @Entity('addresses')
 export class Address {
@@ -45,7 +45,7 @@ export class Address {
   @Column({ default: true })
   isActive: boolean;
 
-  @ManyToOne('User', 'addresses')
+  @ManyToOne(() => User, (user) => user.addresses)
   user: User;
 
   @CreateDateColumn()

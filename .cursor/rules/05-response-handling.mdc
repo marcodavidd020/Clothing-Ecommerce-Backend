@@ -1,0 +1,106 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Manejo de Respuestas y Errores
+
+Este proyecto utiliza un formato de respuesta estandarizado para todas las respuestas HTTP y un sistema consistente para el manejo de errores.
+
+## Estructura de Respuestas
+
+Los helpers de respuesta se encuentran en `src/common/helpers/responses/`:
+
+*   **[success.helper.ts](mdc:src/common/helpers/responses/success.helper.ts)**: Helpers para respuestas exitosas.
+*   **[error.helper.ts](mdc:src/common/helpers/responses/error.helper.ts)**: Helpers para respuestas de error.
+*   **[pagination.helper.ts](mdc:src/common/helpers/responses/pagination.helper.ts)**: Helpers para respuestas paginadas.
+
+### Respuestas Exitosas
+
+```typescript
+// Formato general de respuesta exitosa
+{
+  "status": "success",
+  "message": "Operación completada exitosamente",
+  "data": { ... } // Datos de la operación
+}
+```
+
+Helpers comunes:
+*   `createSuccessResponse(data, message)`: Crea una respuesta de éxito básica.
+*   `createCreatedResponse(data, entityName)`: Crea una respuesta para entidad creada.
+
+### Respuestas de Error
+
+```typescript
+// Formato general de respuesta de error
+{
+  "status": "error",
+  "message": "Descripción del error",
+  "errors": [ ... ] // Detalles adicionales del error (opcional)
+}
+```
+
+Helpers comunes:
+*   `createErrorResponse(message)`: Crea una respuesta de error básica.
+*   `createNotFoundResponse(entityName)`: Crea una respuesta para entidad no encontrada.
+*   `createBadRequestResponse(message)`: Crea una respuesta para solicitud inválida.
+
+### Respuestas Paginadas
+
+```typescript
+// Formato general de respuesta paginada
+{
+  "status": "success",
+  "message": "Datos recuperados exitosamente",
+  "data": [ ... ], // Array de datos
+  "pagination": {
+    "totalItems": 100,
+    "totalPages": 10,
+    "currentPage": 1,
+    "pageSize": 10,
+    "hasNextPage": true,
+    "hasPrevPage": false
+  }
+}
+```
+
+Helper principal:
+*   `createPaginatedResponse(paginatedResult, message)`: Crea una respuesta con metadatos de paginación.
+
+## Manejo de Errores
+
+### Excepciones NestJS
+
+El proyecto utiliza las excepciones integradas de NestJS para manejar diferentes tipos de errores:
+
+*   `NotFoundException`: Para recursos no encontrados (HTTP 404).
+*   `BadRequestException`: Para solicitudes inválidas (HTTP 400).
+*   `UnauthorizedException`: Para errores de autenticación (HTTP 401).
+*   `ForbiddenException`: Para errores de autorización (HTTP 403).
+*   `ConflictException`: Para conflictos de datos (HTTP 409).
+
+### Ejemplo de Uso en Controlador
+
+```typescript
+// En un controlador (*.controller.ts)
+@Get(':id')
+async findById(@Param('id') id: string): Promise<ISuccessResponse<UserSerializer>> {
+  try {
+    const user = await this.usersService.findById(id);
+    if (!user) {
+      throw new NotFoundException(createNotFoundResponse('Usuario'));
+    }
+    return createSuccessResponse(user, 'Usuario encontrado exitosamente');
+  } catch (error) {
+    // Relanzar excepciones específicas
+    if (error instanceof NotFoundException) {
+      throw error;
+    }
+    // Convertir otros errores a ConflictException
+    throw new ConflictException(createErrorResponse('Error al obtener el usuario'));
+  }
+}
+```
+
+Esta estructura asegura que todas las respuestas de la API sigan un formato consistente, lo que facilita el manejo en el cliente y mejora la experiencia de desarrollo.

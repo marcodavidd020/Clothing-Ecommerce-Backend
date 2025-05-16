@@ -1,0 +1,85 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Repositorios y `ModelRepository` Base
+
+Los repositorios son responsables de la lógica de acceso a datos, encapsulando las interacciones con la base de datos (principalmente a través de TypeORM).
+
+## Estructura y Ubicación
+
+*   Cada módulo de modelo tiene su propio repositorio, ubicado en `src/models/[nombre-modelo]/repositories/*.repository.ts`.
+    *   Ejemplo: [UsersRepository](mdc:src/models/users/repositories/users.repository.ts), [AddressesRepository](mdc:src/models/addresses/repositories/addresses.repository.ts).
+*   Estos repositorios específicos de modelo generalmente extienden una clase base `ModelRepository`.
+
+## `ModelRepository` Base
+
+*   Una clase genérica (probablemente ubicada en `src/common/repositories/model.repository.ts` o similar) que provee métodos CRUD comunes y lógica de paginación y serialización básica.
+*   Implementa operaciones como `getAll`, `get (byId)`, `getBy`, `createEntity`, `updateEntity`, `deleteEntity`, `paginate`.
+*   Maneja la transformación de entidades a serializadores (`transform` y `transformMany`).
+*   Recibe el `Serializer` específico en su constructor para saber cómo transformar las entidades.
+*   Espera que se le pasen las relaciones a cargar (`relations: string[]`) en muchos de sus métodos para el *eager loading* de TypeORM.
+
+```typescript
+// Ejemplo conceptual de ModelRepository
+export abstract class ModelRepository<TEntity, TSerializer> {
+  protected repository: Repository<TEntity>;
+  protected serializerClass: new (partial: Partial<TEntity>) => TSerializer;
+
+  constructor(serializerClass: new (partial: Partial<TEntity>) => TSerializer) {
+    this.serializerClass = serializerClass;
+    // ... inicialización del manager y repository de TypeORM ...
+  }
+
+  async getAll(relations: string[] = []): Promise<TSerializer[]> {
+    const entities = await this.repository.find({ relations });
+    return this.transformMany(entities);
+  }
+
+  async get(id: any, relations: string[] = []): Promise<TSerializer | null> {
+    const entity = await this.repository.findOne({ where: { id }, relations });
+    return entity ? this.transform(entity) : null;
+  }
+  
+  // ... otros métodos CRUD y de paginación ...
+
+  protected transform(entity: TEntity): TSerializer {
+    return new this.serializerClass(entity as DeepPartial<TEntity>);
+  }
+
+  protected transformMany(entities: TEntity[]): TSerializer[] {
+    return entities.map(entity => this.transform(entity));
+  }
+}
+```
+
+## Repositorios Específicos del Modelo
+
+*   Ejemplo: `UsersRepository` extiende `ModelRepository<User, UserSerializer>`.
+*   Pueden implementar métodos de búsqueda específicos que no están cubiertos por el `ModelRepository` genérico.
+    *   Por ejemplo, `UsersRepository` tiene `findByEmail(email: string)` y `findUserWithPassword(email: string)`.
+    *   `AddressesRepository` tiene `findByUserId(userId: string)`.
+*   Pasan el `Serializer` apropiado (`UserSerializer`, `AddressSerializer`) al constructor `super()`.
+*   Especifican las relaciones a cargar al llamar a los métodos del `ModelRepository` base (ej. `super.get(id, ['addresses', 'userRoles'])`).
+
+```typescript
+// En src/models/users/repositories/users.repository.ts
+@Injectable()
+export class UsersRepository extends ModelRepository<User, UserSerializer> {
+  constructor(@InjectDataSource() dataSource: DataSource) {
+    super(UserSerializer); // Pasa UserSerializer a la clase base
+    // ...
+  }
+
+  async findById(id: string): Promise<UserSerializer | null> {
+    return this.get(id, ['addresses', 'userRoles', 'userRoles.role']); // Carga relaciones
+  }
+  // ... métodos específicos ...
+}
+```
+
+## Inyección de Dependencias
+
+*   Los repositorios se marcan con `@Injectable()`.
+*   Utilizan `@InjectDataSource()` o `@InjectRepository()` para obtener el `DataSource` o `Repository` de TypeORM.

@@ -1,0 +1,101 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# DTOs y Validaciu00f3n de Datos
+
+Los Data Transfer Objects (DTOs) juegan un papel crucial en la validaciu00f3n de datos de entrada y en la documentaciu00f3n de la API.
+
+## u00bfQuu00e9 son los DTOs?
+
+Los DTOs (Data Transfer Objects) son objetos que definen cu00f3mo se envu00edan los datos a travu00e9s de la red. En NestJS, los DTOs se implementan como clases simples que determinan la estructura de los datos que se envu00edan en las peticiones.
+
+## Ubicaciu00f3n de los DTOs
+
+*   Los DTOs se encuentran en el directorio `dto/` dentro de cada mu00f3dulo de modelo:
+    *   `src/models/[nombre-modelo]/dto/`
+*   Ejemplos comunes:
+    *   [create-user.dto.ts](mdc:src/models/users/dto/create-user.dto.ts)
+    *   [update-user.dto.ts](mdc:src/models/users/dto/update-user.dto.ts)
+    *   [create-address.dto.ts](mdc:src/models/addresses/dto/create-address.dto.ts)
+    *   [update-address.dto.ts](mdc:src/models/addresses/dto/update-address.dto.ts)
+
+## Estructura de un DTO
+
+```typescript
+// Ejemplo de un DTO de creaciu00f3n
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsString, IsNotEmpty, IsOptional, Length } from 'class-validator';
+
+export class CreateUserDto {
+  @ApiProperty({ example: 'usuario@ejemplo.com', description: 'Email del usuario' })
+  @IsEmail({}, { message: 'Debe proporcionar un email vu00e1lido' })
+  @IsNotEmpty({ message: 'El email es obligatorio' })
+  email: string;
+
+  @ApiProperty({ example: 'Juan', description: 'Nombre del usuario' })
+  @IsString({ message: 'El nombre debe ser un texto' })
+  @IsNotEmpty({ message: 'El nombre es obligatorio' })
+  firstName: string;
+
+  // ... mu00e1s propiedades con validadores ...
+}
+```
+
+## Validaciu00f3n con class-validator
+
+El proyecto utiliza la biblioteca `class-validator` para la validaciu00f3n de datos de los DTOs. Los decoradores comunes son:
+
+*   **Validaciones de tipo**:
+    *   `@IsString()`: Valida que el valor sea una cadena de texto.
+    *   `@IsNumber()`: Valida que el valor sea un nu00famero.
+    *   `@IsBoolean()`: Valida que el valor sea un booleano.
+    *   `@IsDate()`: Valida que el valor sea una fecha.
+    *   `@IsArray()`: Valida que el valor sea un array.
+    *   `@IsObject()`: Valida que el valor sea un objeto.
+    *   `@IsEnum(EnumType)`: Valida que el valor sea uno de los valores del enum especificado.
+
+*   **Validaciones de contenido**:
+    *   `@IsNotEmpty()`: Valida que el valor no sea vacu00edo.
+    *   `@IsEmail()`: Valida que el valor sea un email vu00e1lido.
+    *   `@Length(min, max)`: Valida que la longitud de la cadena estu00e9 entre min y max.
+    *   `@MinLength(min)`: Valida que la longitud mu00ednima sea al menos min.
+    *   `@MaxLength(max)`: Valida que la longitud mu00e1xima no exceda max.
+    *   `@Min(min)`: Valida que el valor numu00e9rico sea al menos min.
+    *   `@Max(max)`: Valida que el valor numu00e9rico no exceda max.
+
+*   **Validaciones de opcionalidad**:
+    *   `@IsOptional()`: Indica que la propiedad es opcional (no se valida si es undefined).
+
+## Documentaciu00f3n con Swagger
+
+Ademu00e1s de la validaciu00f3n, los DTOs se utilizan para generar la documentaciu00f3n de la API con Swagger a travu00e9s del decorador `@ApiProperty()`:
+
+```typescript
+@ApiProperty({
+  example: 'usuario@ejemplo.com',
+  description: 'Email del usuario',
+  required: true
+})
+```
+
+Esto genera documentaciu00f3n de API que muestra:
+*   Descripciu00f3n de la propiedad
+*   Ejemplo de valor
+*   Si es obligatorio o no
+*   Tipo de dato esperado
+
+## Uso en Controladores
+
+Los DTOs se utilizan en los controladores para validar automu00e1ticamente los datos de entrada:
+
+```typescript
+@Post()
+async create(@Body() createUserDto: CreateUserDto): Promise<ISuccessResponse<UserSerializer>> {
+  const user = await this.usersService.create(createUserDto);
+  return createCreatedResponse(user, 'Usuario');
+}
+```
+
+Cuando llega una peticiu00f3n a este endpoint, NestJS valida automu00e1ticamente que el cuerpo cumpla con las reglas definidas en `CreateUserDto`. Si la validaciu00f3n falla, se devuelve un error 400 Bad Request con los detalles de la validaciu00f3n fallida.

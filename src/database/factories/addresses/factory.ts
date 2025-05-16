@@ -1,6 +1,5 @@
-import { Address } from '../../../models/addresses/entities/address.entity';
-import { User } from '../../../models/users/entities/user.entity';
 import { DeepPartial } from 'typeorm';
+import { Address } from '../../../models/addresses/entities/address.entity';
 
 export class AddressFactory {
   /**
@@ -37,7 +36,7 @@ export class AddressFactory {
   /**
    * Lista de provincias
    */
-  private static states = [
+  private static departments = [
     'Madrid',
     'Barcelona',
     'Valencia',
@@ -51,18 +50,80 @@ export class AddressFactory {
   ];
 
   /**
+   * Lista de full names de la dirección
+   */
+  private static fullNames = [
+    'Av.Bolivia, Calle 8',
+    'Av.Bolivia, Calle 9',
+    'Av.Bolivia, Calle 10',
+    'Av.Bolivia, Calle 11',
+    'Av.Bolivia, Calle 12',
+  ];
+
+  /**
+   * Lista de números de phoneNumber de la dirección
+   */
+  private static phoneNumbers = [
+    '1234567890',
+    '0987654321',
+    '1122334455',
+    '1234567890',
+    '0987654321',
+    '1122334455',
+    '1234567890',
+    '0987654321',
+    '1122334455',
+  ];
+
+  /**
+   * Lista de latitudes de la dirección
+   */
+  private static latitude = [
+    -16.5,
+    -16.6,
+    -16.7,
+    -16.8,
+    -16.9,
+  ];
+
+  /**
+   * Lista de longitudes de la dirección
+   */
+  private static longitude = [
+    -68.1,
+    -68.2,
+    -68.3,
+    -68.4,
+    -68.5,
+  ];
+
+  /**
    * Generar una dirección aleatoria
    */
   static generate(overrideParams: Partial<Address> = {}): DeepPartial<Address> {
     const city = overrideParams.city || this.getRandomElement(this.cities);
     const department = overrideParams.department || this.getStateForCity(city);
+    const phoneNumber =
+      overrideParams.phoneNumber ||
+      this.getRandomElement(this.phoneNumbers);
+    const latitude =
+      overrideParams.latitude ||
+      this.getRandomElement(this.latitude);
+    const longitude =
+      overrideParams.longitude ||
+      this.getRandomElement(this.longitude);
 
     return {
       id: overrideParams.id, // Permitir ID fijo para tests
+      fullName:
+        overrideParams.fullName || `${this.getRandomElement(this.fullNames)}`,
       street:
         overrideParams.street ||
         `${this.getRandomElement(this.streets)}, ${Math.floor(Math.random() * 100)}`,
       city,
+      phoneNumber,
+      latitude,
+      longitude,
       department,
       postalCode: overrideParams.postalCode || this.generatePostalCode(),
       isDefault:
@@ -109,8 +170,8 @@ export class AddressFactory {
   private static getStateForCity(city: string): string {
     const cityIndex = this.cities.indexOf(city);
     if (cityIndex !== -1) {
-      return this.states[cityIndex];
+      return this.departments[cityIndex];
     }
-    return this.getRandomElement(this.states);
+    return this.getRandomElement(this.departments);
   }
 }
