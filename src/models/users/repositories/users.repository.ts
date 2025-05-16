@@ -20,65 +20,64 @@ export class UsersRepository extends ModelRepository<User, UserSerializer> {
   }
 
   /**
-   * Obtener todos los usuarios
+   * Obtener todos los usuarios activos
    */
   async findAll(): Promise<UserSerializer[]> {
-    return this.getAll(['addresses', 'userRoles', 'userRoles.role']);
+    return this.getAllBy({ isActive: true }, [
+      'addresses',
+      'userRoles',
+      'userRoles.role',
+    ]);
   }
 
   /**
-   * Buscar usuario por id
+   * Buscar usuario activo por id
    */
   async findById(id: string): Promise<UserSerializer | null> {
-    return this.get(id, ['addresses', 'userRoles', 'userRoles.role']);
+    return this.getBy({ id, isActive: true } as any, [
+      'addresses',
+      'userRoles',
+      'userRoles.role',
+    ], false);
   }
 
   /**
-   * Buscar usuario por email
+   * Buscar usuario activo por email
    */
   async findByEmail(email: string): Promise<UserSerializer | null> {
     return this.getBy(
-      { email },
+      { email, isActive: true },
       ['addresses', 'userRoles', 'userRoles.role'],
       false,
     );
   }
 
   /**
-   * Buscar usuarios por término de búsqueda
+   * Buscar usuarios activos por término de búsqueda
    */
   async search(
     query: string,
     options: IPaginationOptions,
   ): Promise<IPaginatedResult<UserSerializer>> {
     // Para debugging
-    console.log(`Buscando usuarios con query: "${query}"`);
+    console.log(`Buscando usuarios activos con query: "${query}"`);
 
-    // Construir una consulta con OR para buscar en múltiples campos
     const queryBuilder = this.repository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.addresses', 'addresses')
       .leftJoinAndSelect('user.userRoles', 'userRoles')
-      .leftJoinAndSelect('userRoles.role', 'role');
+      .leftJoinAndSelect('userRoles.role', 'role')
+      .where('user.isActive = :isActive', { isActive: true });
 
-    // Añadir condiciones de búsqueda
-    // Usamos LOWER para compatibilidad con diferentes bases de datos
-    queryBuilder
-      .where('LOWER(user.firstName) LIKE LOWER(:query)', {
-        query: `%${query}%`,
-      })
-      .orWhere('LOWER(user.lastName) LIKE LOWER(:query)', {
-        query: `%${query}%`,
-      })
-      .orWhere('LOWER(user.email) LIKE LOWER(:query)', { query: `%${query}%` });
-
-    // Añadir búsqueda en phone solo si no es null
-    queryBuilder.orWhere(
-      'user.phoneNumber IS NOT NULL AND LOWER(user.phoneNumber) LIKE LOWER(:query)',
+    // Añadir condiciones de búsqueda anidadas con AND
+    queryBuilder.andWhere(
+      '(LOWER(user.firstName) LIKE LOWER(:query) OR ' +
+        'LOWER(user.lastName) LIKE LOWER(:query) OR ' +
+        'LOWER(user.email) LIKE LOWER(:query) OR ' +
+        "(user.phoneNumber IS NOT NULL AND LOWER(user.phoneNumber) LIKE LOWER(:query)))",
       { query: `%${query}%` },
     );
-
-    // Calcular la paginación
+    
     const page = options.page || 1;
     const limit = options.limit || 10;
     const skip = (page - 1) * limit;
@@ -123,7 +122,7 @@ export class UsersRepository extends ModelRepository<User, UserSerializer> {
     try {
       // Usando findOneBy con select explícito para incluir todos los campos necesarios
       const user = await this.repository.findOne({
-        where: { email },
+        where: { email, isActive: true },
         select: [
           'id',
           'email',
@@ -132,7 +131,7 @@ export class UsersRepository extends ModelRepository<User, UserSerializer> {
           'isActive',
           'avatar',
           'phoneNumber',
-          'password', // Incluye explícitamente el password
+          'password',
           'createdAt',
           'updatedAt',
         ],
@@ -176,9 +175,24 @@ export class UsersRepository extends ModelRepository<User, UserSerializer> {
   }
 
   /**
-   * Eliminar un usuario
+   * Desactivar un usuario (borrado lógico)
+   * @param id ID del usuario a desactivar
+   * @returns Verdadero si el usuario fue desactivado, falso en caso contrario
+   */
+  async deactivate(id: string): Promise<boolean> {
+    const result = await this.repository.update(id, { isActive: false });
+    if (result.affected && result.affected > 0) {
+      console.log(`Usuario con ID ${id} desactivado.`);
+      return true;
+    }
+    console.log(`No se pudo desactivar el usuario con ID ${id} o ya estaba desactivado.`);
+    return false;
+  }
+
+  /**
+   * Eliminar un usuario (ahora desactiva)
    */
   async delete(id: string): Promise<boolean> {
-    return this.deleteEntity(id);
+    return this.deactivate(id);
   }
 }
