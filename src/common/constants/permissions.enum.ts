@@ -1,3 +1,5 @@
+import { ProductPermissions } from 'src/models/products/constants/product-permissions.constant';
+
 /**
  * Interfaz para definir permisos con descripción
  */
@@ -230,6 +232,7 @@ export const ALL_PERMISSIONS = {
   CLIENT: ClientPermissions,
   ADDRESS: AddressPermissions,
   CATEGORY: CategoryPermissions,
+  PRODUCT: ProductPermissions,
 };
 
 /**
@@ -242,4 +245,5 @@ export const PERMISSIONS_LIST: Permission[] = [
   ...Object.values(ClientPermissions),
   ...Object.values(AddressPermissions),
   ...Object.values(CategoryPermissions),
+  ...Object.values(ProductPermissions),
 ];

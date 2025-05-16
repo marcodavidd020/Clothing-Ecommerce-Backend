@@ -8,6 +8,7 @@ import { UserRolesSeeder } from './seeders/users/user-roles.seeder';
 import { DatabaseModule } from './database.module';
 import { Logger } from '@nestjs/common';
 import { CategoriesSeederService } from './seeders/categories/categories.seeder';
+import { ProductsSeederService } from './seeders/products/products.seeder';
 
 async function bootstrap() {
   const logger = new Logger('Seeder');
@@ -44,6 +45,10 @@ async function bootstrap() {
     logger.log('Ejecutando seeder de categorías...');
     const categoriesSeederService = appContext.get(CategoriesSeederService);
     await categoriesSeederService.seed();
+
+    logger.log('Ejecutando seeder de productos...');
+    const productsSeederService = appContext.get(ProductsSeederService);
+    await productsSeederService.seed();
 
     logger.log('Proceso de seed completado exitosamente!');
   } catch (error) {
