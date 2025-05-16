@@ -32,12 +32,15 @@ export class ProductsRepository extends ModelRepository<
   }
 
   async findAll(relations: string[] = []): Promise<Product[]> {
-    return this.getAllBy({ isActive: true }, relations);
+    return this.repository.find({
+      where: { isActive: true },
+      relations,
+    });
   }
 
   async paginate(
     options: IPaginationOptions,
-    relations: string[] = [],
+    relationsToLoad: string[] = [],
   ): Promise<IPaginatedResult<Product>> {
     const page = options.page || 1;
     const limit = options.limit || 10;
@@ -46,16 +49,16 @@ export class ProductsRepository extends ModelRepository<
     const queryBuilder = this.repository.createQueryBuilder('product');
     queryBuilder.where('product.isActive = :isActive', { isActive: true });
 
-    if (relations.includes('categories')) {
+    if (relationsToLoad.includes('categories')) {
       queryBuilder.leftJoinAndSelect('product.categories', 'categories');
     }
 
-    if (relations.includes('variants')) {
-      queryBuilder.leftJoinAndSelect('product.variants', 'variants', 'variants.isActive = :isActive', { isActive: true });
+    if (relationsToLoad.includes('variants')) {
+      queryBuilder.leftJoinAndSelect('product.variants', 'variants');
     }
 
-    if (relations.includes('images')) {
-      queryBuilder.leftJoinAndSelect('product.images', 'images', 'images.isActive = :isActive', { isActive: true });
+    if (relationsToLoad.includes('images')) {
+      queryBuilder.leftJoinAndSelect('product.images', 'images');
     }
 
     queryBuilder.skip(skip).take(limit);
@@ -64,9 +67,8 @@ export class ProductsRepository extends ModelRepository<
 
     const totalPages = Math.ceil(totalItems / limit);
 
-    // Convertir los items de Product a ProductSerializer usando transformMany
     return {
-      data: entities, // Use transformMany
+      data: entities,
       pagination: {
         totalItems,
         totalPages,
@@ -82,18 +84,23 @@ export class ProductsRepository extends ModelRepository<
     id: string,
     relations: string[] = [],
   ): Promise<Product | null> {
-    return this.getBy({ id, isActive: true } as any, relations, false);
+    return this.repository.findOne({
+      where: { id, isActive: true },
+      relations,
+    });
   }
 
   async findBySlug(
     slug: string,
     relations: string[] = [],
   ): Promise<Product | null> {
-    return this.getBy({ slug, isActive: true } as any, relations, false);
+    return this.repository.findOne({
+      where: { slug, isActive: true },
+      relations,
+    });
   }
 
   async create(data: CreateProductDto): Promise<Product> {
-    // Crear el producto base - Use createEntity but need to handle categories separately
     const productDataWithoutRelations = {
       name: data.name,
       image: data.image,
@@ -107,7 +114,6 @@ export class ProductsRepository extends ModelRepository<
 
     const newProduct = this.repository.create(productDataWithoutRelations);
 
-    // Si se proporcionaron IDs de categorías, las agregamos al producto
     if (data.categoryIds && data.categoryIds.length > 0) {
       const categories = await this.categoryRepository.find({
         where: { id: In(data.categoryIds) },
@@ -117,34 +123,23 @@ export class ProductsRepository extends ModelRepository<
       newProduct.categories = [];
     }
 
-    // Guardar el producto en la base de datos
-    const savedProduct = await this.repository.save(newProduct);
-
-    // Retornamos el producto serializado - Use transform
-    return savedProduct;
+    return this.repository.save(newProduct);
   }
 
   async update(
     id: string,
     data: UpdateProductDto,
   ): Promise<Product | null> {
-    // Obtener el producto existente con relaciones si es necesario para la lógica de categorías
     const product = await this.repository.findOne({
-      where: { id },
-      relations: ['categories'], // Need existing categories to handle replacement/addition
+      where: { id, isActive: true },
+      relations: ['categories'],
     });
     if (!product) return null;
 
-    // Actualizar los campos directos - Use merge from repository, not updateEntity directly
-    // This is because updateEntity expects DeepPartial<T> and saves directly,
-    // but we need to modify the fetched entity before saving due to custom category logic.
     const merged = this.repository.merge(product, data);
 
-    // Manejar categorías si se proporcionaron
     if (data.categoryIds !== undefined) {
-      // Check specifically for undefined to allow null/empty array
       if (data.replaceCategories) {
-        // Reemplazar las categorías existentes
         if (data.categoryIds.length > 0) {
           const categories = await this.categoryRepository.find({
             where: { id: In(data.categoryIds) },
@@ -154,11 +149,9 @@ export class ProductsRepository extends ModelRepository<
           merged.categories = [];
         }
       } else if (data.categoryIds.length > 0) {
-        // Agregar nuevas categorías manteniendo las existentes
         const newCategories = await this.categoryRepository.find({
           where: { id: In(data.categoryIds) },
         });
-        // Filtrar para evitar duplicados
         const existingCategoryIds = merged.categories.map((cat) => cat.id);
         const uniqueNewCategories = newCategories.filter(
           (cat) => !existingCategoryIds.includes(cat.id),
@@ -166,15 +159,10 @@ export class ProductsRepository extends ModelRepository<
         merged.categories = [...merged.categories, ...uniqueNewCategories];
       }
     } else if (data.replaceCategories) {
-      // If categoryIds is undefined but replaceCategories is true, just clear categories
       merged.categories = [];
     }
 
-    // Guardar el producto actualizado
-    const updatedProduct = await this.repository.save(merged);
-
-    // Retornamos el producto serializado - Use transform
-    return updatedProduct;
+    return this.repository.save(merged);
   }
 
   async delete(id: string): Promise<boolean> {
@@ -184,5 +172,9 @@ export class ProductsRepository extends ModelRepository<
   async deactivateProduct(id: string): Promise<boolean> {
     const result = await this.repository.update(id, { isActive: false });
     return result.affected ? result.affected > 0 : false;
+  }
+
+  async save(entity: Product): Promise<Product> {
+    return this.repository.save(entity);
   }
 }
