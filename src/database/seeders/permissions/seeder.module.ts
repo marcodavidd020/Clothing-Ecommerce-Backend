@@ -8,4 +8,4 @@ import { Permission } from '../../../models/permissions/entities/permission.enti
   providers: [PermissionsSeeder],
   exports: [PermissionsSeeder],
 })
-export class PermissionsSeederModule {} 
+export class PermissionsSeederModule {}
