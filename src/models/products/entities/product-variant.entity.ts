@@ -21,6 +21,9 @@ export class ProductVariant {
   @Column({ type: 'integer', default: 0 })
   stock: number;
 
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean;
+
   @Column({ name: 'product_id' })
   productId: string;
 

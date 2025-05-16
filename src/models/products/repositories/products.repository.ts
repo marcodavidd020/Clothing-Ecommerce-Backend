@@ -5,7 +5,6 @@ import { Product } from '../entities/product.entity';
 import { Category } from '../../categories/entities/category.entity';
 import { CreateProductDto } from '../dto/create-product.dto';
 import { UpdateProductDto } from '../dto/update-product.dto';
-import { ProductSerializer } from '../serializers/product.serializer';
 import { ModelRepository } from '../../common/repositories/model.repository';
 import { plainToInstance } from 'class-transformer';
 import {
@@ -18,7 +17,7 @@ import {
 @Injectable()
 export class ProductsRepository extends ModelRepository<
   Product,
-  ProductSerializer
+  Product
 > {
   private readonly logger = new Logger(ProductsRepository.name);
 
@@ -27,35 +26,36 @@ export class ProductsRepository extends ModelRepository<
     @InjectRepository(Category) // Still need Category repository directly for category relation logic in create/update
     private readonly categoryRepository: Repository<Category>,
   ) {
-    super(ProductSerializer);
+    super(Product);
     this.manager = dataSource.manager;
     this.repository = dataSource.getRepository(Product);
   }
 
-  async findAll(relations: string[] = []): Promise<ProductSerializer[]> {
-    return this.getAll(relations);
+  async findAll(relations: string[] = []): Promise<Product[]> {
+    return this.getAllBy({ isActive: true }, relations);
   }
 
   async paginate(
     options: IPaginationOptions,
     relations: string[] = [],
-  ): Promise<IPaginatedResult<ProductSerializer>> {
+  ): Promise<IPaginatedResult<Product>> {
     const page = options.page || 1;
     const limit = options.limit || 10;
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.repository.createQueryBuilder('product');
+    queryBuilder.where('product.isActive = :isActive', { isActive: true });
 
     if (relations.includes('categories')) {
       queryBuilder.leftJoinAndSelect('product.categories', 'categories');
     }
 
     if (relations.includes('variants')) {
-      queryBuilder.leftJoinAndSelect('product.variants', 'variants');
+      queryBuilder.leftJoinAndSelect('product.variants', 'variants', 'variants.isActive = :isActive', { isActive: true });
     }
 
     if (relations.includes('images')) {
-      queryBuilder.leftJoinAndSelect('product.images', 'images');
+      queryBuilder.leftJoinAndSelect('product.images', 'images', 'images.isActive = :isActive', { isActive: true });
     }
 
     queryBuilder.skip(skip).take(limit);
@@ -66,7 +66,7 @@ export class ProductsRepository extends ModelRepository<
 
     // Convertir los items de Product a ProductSerializer usando transformMany
     return {
-      data: this.transformMany(entities), // Use transformMany
+      data: entities, // Use transformMany
       pagination: {
         totalItems,
         totalPages,
@@ -81,19 +81,18 @@ export class ProductsRepository extends ModelRepository<
   async findById(
     id: string,
     relations: string[] = [],
-  ): Promise<ProductSerializer | null> {
-    return this.get(id, relations);
+  ): Promise<Product | null> {
+    return this.getBy({ id, isActive: true } as any, relations, false);
   }
 
   async findBySlug(
     slug: string,
     relations: string[] = [],
-  ): Promise<ProductSerializer | null> {
-    // Use getBy with throwOnNotFound set to false to match original logic
-    return this.getBy({ slug } as any, relations, false);
+  ): Promise<Product | null> {
+    return this.getBy({ slug, isActive: true } as any, relations, false);
   }
 
-  async create(data: CreateProductDto): Promise<ProductSerializer> {
+  async create(data: CreateProductDto): Promise<Product> {
     // Crear el producto base - Use createEntity but need to handle categories separately
     const productDataWithoutRelations = {
       name: data.name,
@@ -103,6 +102,7 @@ export class ProductsRepository extends ModelRepository<
       price: data.price,
       discountPrice: data.discountPrice,
       stock: data.stock || 0,
+      isActive: true,
     };
 
     const newProduct = this.repository.create(productDataWithoutRelations);
@@ -121,13 +121,13 @@ export class ProductsRepository extends ModelRepository<
     const savedProduct = await this.repository.save(newProduct);
 
     // Retornamos el producto serializado - Use transform
-    return this.transform(savedProduct);
+    return savedProduct;
   }
 
   async update(
     id: string,
     data: UpdateProductDto,
-  ): Promise<ProductSerializer | null> {
+  ): Promise<Product | null> {
     // Obtener el producto existente con relaciones si es necesario para la lógica de categorías
     const product = await this.repository.findOne({
       where: { id },
@@ -174,10 +174,15 @@ export class ProductsRepository extends ModelRepository<
     const updatedProduct = await this.repository.save(merged);
 
     // Retornamos el producto serializado - Use transform
-    return this.transform(updatedProduct);
+    return updatedProduct;
   }
 
   async delete(id: string): Promise<boolean> {
     return this.deleteEntity(id);
+  }
+
+  async deactivateProduct(id: string): Promise<boolean> {
+    const result = await this.repository.update(id, { isActive: false });
+    return result.affected ? result.affected > 0 : false;
   }
 }

@@ -17,6 +17,7 @@ import {
   IPaginationOptions,
 } from '../../common/interfaces/pagination.interface';
 import { IProductsService } from './interfaces/product.interface';
+import { Product } from './entities/product.entity';
 
 @Injectable()
 export class ProductsService implements IProductsService {
@@ -28,11 +29,34 @@ export class ProductsService implements IProductsService {
     private readonly imagesRepository: ProductImagesRepository,
   ) {}
 
+  private filterActiveRelations(product: Product): Product {
+    if (product) {
+      if (product.variants && Array.isArray(product.variants)) {
+        product.variants = product.variants.filter(
+          (variant) => variant.isActive === true,
+        );
+      }
+      if (product.images && Array.isArray(product.images)) {
+        product.images = product.images.filter(
+          (image) => image.isActive === true,
+        );
+      }
+    }
+    return product;
+  }
+
   /**
    * Obtener todos los productos
    */
-  async findAll(): Promise<ProductSerializer[]> {
-    return this.productsRepository.findAll(['categories']);
+  async findAll(): Promise<Product[]> {
+    const products: Product[] = await this.productsRepository.findAll([
+      'categories',
+      'variants',
+      'images',
+    ]);
+    return products.map((product: Product) =>
+      this.filterActiveRelations(product),
+    );
   }
 
   /**
@@ -40,44 +64,57 @@ export class ProductsService implements IProductsService {
    */
   async findPaginated(
     options: IPaginationOptions,
-  ): Promise<IPaginatedResult<ProductSerializer>> {
-    return this.productsRepository.paginate(options, [
-      'categories',
-      'variants',
-      'images',
-    ]);
+  ): Promise<IPaginatedResult<Product>> {
+    const paginatedResult: IPaginatedResult<Product> =
+      await this.productsRepository.paginate(options, [
+        'categories',
+        'variants',
+        'images',
+      ]);
+
+    const filteredData = paginatedResult.data.map((product: Product) =>
+      this.filterActiveRelations(product),
+    );
+
+    return { ...paginatedResult, data: filteredData };
   }
 
   /**
    * Buscar producto por ID
    */
-  async findById(id: string): Promise<ProductSerializer> {
-    const product = await this.productsRepository.findById(id, [
-      'categories',
-      'variants',
-      'images',
-    ]);
-    if (!product) {
+  async findById(id: string): Promise<Product> {
+    const productEntity: Product | null =
+      await this.productsRepository.findById(id, [
+        'categories',
+        'variants',
+        'images',
+      ]);
+    if (!productEntity) {
       throw new NotFoundException(createNotFoundResponse('Producto'));
     }
-    return product;
+    return this.filterActiveRelations(productEntity);
   }
 
   /**
    * Buscar producto por slug
    */
-  async findBySlug(slug: string): Promise<ProductSerializer | null> {
-    return this.productsRepository.findBySlug(slug, [
-      'categories',
-      'variants',
-      'images',
-    ]);
+  async findBySlug(slug: string): Promise<Product | null> {
+    const productEntity: Product | null =
+      await this.productsRepository.findBySlug(slug, [
+        'categories',
+        'variants',
+        'images',
+      ]);
+    if (!productEntity) {
+      return null;
+    }
+    return this.filterActiveRelations(productEntity);
   }
 
   /**
    * Crear un nuevo producto
    */
-  async create(productData: CreateProductDto): Promise<ProductSerializer> {
+  async create(productData: CreateProductDto): Promise<Product> {
     // Validar que el slug sea único
     const existingProduct = await this.productsRepository.findBySlug(
       productData.slug,
@@ -137,7 +174,7 @@ export class ProductsService implements IProductsService {
   async update(
     id: string,
     productData: UpdateProductDto,
-  ): Promise<ProductSerializer | null> {
+  ): Promise<Product | null> {
     // Verificar que el producto existe
     const existingProduct = await this.productsRepository.findById(id);
     if (!existingProduct) {
@@ -211,12 +248,28 @@ export class ProductsService implements IProductsService {
   }
 
   /**
-   * Eliminar un producto
+   * Desactiva un producto y sus variantes e imágenes asociadas (borrado lógico)
    */
   async delete(id: string): Promise<void> {
-    const success = await this.productsRepository.delete(id);
+    this.logger.log(`Desactivando producto con ID: ${id} y sus relaciones...`);
+
+    // Desactivar variantes asociadas
+    // Es importante hacer esto ANTES de desactivar el producto si hubiera lógica que dependiera del estado activo del producto
+    // Pero para una simple desactivación en cascada, el orden es menos crítico que la atomicidad (transacción)
+    await this.variantsRepository.deactivateByProductId(id);
+    this.logger.log(`Variantes para el producto ${id} desactivadas.`);
+
+    // Desactivar imágenes asociadas
+    await this.imagesRepository.deactivateByProductId(id);
+    this.logger.log(`Imágenes para el producto ${id} desactivadas.`);
+
+    // Desactivar el producto principal
+    const success = await this.productsRepository.deactivateProduct(id);
     if (!success) {
+      // Esto podría significar que el producto ya no existía (o no estaba activo para empezar si deactivateProduct verificara eso)
+      // O simplemente no se pudo actualizar. La excepción NotFound es apropiada.
       throw new NotFoundException(createNotFoundResponse('Producto'));
     }
+    this.logger.log(`Producto ${id} desactivado exitosamente.`);
   }
 }

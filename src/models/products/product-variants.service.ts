@@ -49,7 +49,7 @@ export class ProductVariantsService implements IProductVariantsService {
   }
 
   async delete(id: string): Promise<void> {
-    const success = await this.variantsRepository.delete(id);
+    const success = await this.variantsRepository.deactivate(id);
     if (!success) {
       throw new NotFoundException(
         createNotFoundResponse('Variante de producto'),

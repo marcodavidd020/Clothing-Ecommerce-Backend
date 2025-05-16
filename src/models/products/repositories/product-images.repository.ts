@@ -19,17 +19,18 @@ export class ProductImagesRepository extends ModelRepository<
   }
 
   async findById(id: string): Promise<ProductImageSerializer | null> {
-    return this.get(id);
+    return this.getBy({ id, isActive: true } as any, [], false);
   }
 
   async findByProductId(productId: string): Promise<ProductImageSerializer[]> {
-    return this.getAllBy({ productId });
+    return this.getAllBy({ productId, isActive: true });
   }
 
   async create(
     data: CreateProductImageDto & { productId: string },
   ): Promise<ProductImageSerializer> {
-    return this.createEntity(data);
+    const imageData = { ...data, isActive: true };
+    return this.createEntity(imageData);
   }
 
   async update(
@@ -41,6 +42,16 @@ export class ProductImagesRepository extends ModelRepository<
 
   async delete(id: string): Promise<boolean> {
     return this.deleteEntity(id);
+  }
+
+  async deactivate(id: string): Promise<boolean> {
+    const result = await this.repository.update(id, { isActive: false });
+    return result.affected ? result.affected > 0 : false;
+  }
+
+  async deactivateByProductId(productId: string): Promise<boolean> {
+    const result = await this.repository.update({ productId }, { isActive: false });
+    return result.affected ? result.affected > 0 : false;
   }
 
   async deleteByProductId(productId: string): Promise<boolean> {

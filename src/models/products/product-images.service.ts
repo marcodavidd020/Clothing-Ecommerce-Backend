@@ -40,7 +40,7 @@ export class ProductImagesService implements IProductImagesService {
   }
 
   async delete(id: string): Promise<void> {
-    const success = await this.imagesRepository.delete(id);
+    const success = await this.imagesRepository.deactivate(id);
     if (!success) {
       throw new NotFoundException(createNotFoundResponse('Imagen de producto'));
     }

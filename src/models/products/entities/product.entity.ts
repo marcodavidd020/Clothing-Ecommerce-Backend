@@ -47,6 +47,9 @@ export class Product {
   @Column({ type: 'integer', nullable: false, default: 0 })
   stock: number;
 
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

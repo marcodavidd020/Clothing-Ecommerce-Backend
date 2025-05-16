@@ -18,6 +18,9 @@ export class ProductImage {
   @Column({ type: 'text', nullable: true })
   alt: string | null;
 
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean;
+
   @Column({ name: 'product_id' })
   productId: string;
 

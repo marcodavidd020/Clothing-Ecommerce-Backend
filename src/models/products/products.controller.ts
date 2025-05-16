@@ -1,34 +1,34 @@
 import {
-    Body,
-    ClassSerializerInterceptor,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpStatus,
-    NotFoundException,
-    Param,
-    ParseUUIDPipe,
-    Post,
-    Put,
-    Query,
-    UseGuards,
-    UseInterceptors,
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
-    ApiBearerAuth,
-    ApiBody,
-    ApiOperation,
-    ApiParam,
-    ApiQuery,
-    ApiResponse,
-    ApiTags,
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import { RequirePermissions } from 'src/common/decorators/metadata/permissions.metadata';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import {
-    paginatedResponseSchema,
-    paginationQueryParams,
+  paginatedResponseSchema,
+  paginationQueryParams,
 } from 'src/common/schemas/pagination.schema';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
@@ -38,6 +38,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductsService } from './products.service';
 import { ProductSerializer } from './serializers/product.serializer';
+import { Product } from './entities/product.entity';
 
 @ApiTags('Productos')
 @ApiBearerAuth('JWT-auth')
@@ -71,7 +72,7 @@ export class ProductsController {
   })
   async findAll(
     @Query() paginationDto: PaginationDto,
-  ): Promise<ProductSerializer[] | IPaginatedResult<ProductSerializer>> {
+  ): Promise<Product[] | IPaginatedResult<Product>> {
     if (paginationDto.page || paginationDto.limit) {
       return this.productsService.findPaginated({
         page: paginationDto.page || 1,
@@ -92,9 +93,7 @@ export class ProductsController {
     type: ProductSerializer,
   })
   @ApiResponse({ status: 404, description: 'Producto no encontrado' })
-  async findById(
-    @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<ProductSerializer> {
+  async findById(@Param('id', ParseUUIDPipe) id: string): Promise<Product> {
     return this.productsService.findById(id);
   }
 
@@ -108,7 +107,7 @@ export class ProductsController {
     type: ProductSerializer,
   })
   @ApiResponse({ status: 404, description: 'Producto no encontrado' })
-  async findBySlug(@Param('slug') slug: string): Promise<ProductSerializer> {
+  async findBySlug(@Param('slug') slug: string): Promise<Product> {
     const product = await this.productsService.findBySlug(slug);
     if (!product) {
       throw new NotFoundException(`Producto con slug ${slug} no encontrado`);
@@ -125,9 +124,7 @@ export class ProductsController {
     description: 'Producto creado exitosamente',
     type: ProductSerializer,
   })
-  async create(
-    @Body() createProductDto: CreateProductDto,
-  ): Promise<ProductSerializer> {
+  async create(@Body() createProductDto: CreateProductDto): Promise<Product> {
     return this.productsService.create(createProductDto);
   }
 
@@ -145,7 +142,7 @@ export class ProductsController {
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateProductDto: UpdateProductDto,
-  ): Promise<ProductSerializer> {
+  ): Promise<Product> {
     const updatedProduct = await this.productsService.update(
       id,
       updateProductDto,
