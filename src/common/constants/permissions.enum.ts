@@ -10,10 +10,10 @@ export interface Permission {
  * Permisos relacionados con usuarios
  */
 export enum UserPermissionsEnum {
-  VIEW = 'users.view',
-  CREATE = 'users.create',
-  UPDATE = 'users.update',
-  DELETE = 'users.delete',
+  VIEW = 'view:users',
+  CREATE = 'create:users',
+  UPDATE = 'update:users',
+  DELETE = 'delete:users',
 }
 
 /**
@@ -54,6 +54,14 @@ export enum AddressPermissionsEnum {
   CREATE = 'addresses.create',
   UPDATE = 'addresses.update',
   DELETE = 'addresses.delete',
+}
+
+// Añadir enum para Categorías
+export enum CategoryPermissionsEnum {
+  CREATE = 'create:categories',
+  VIEW = 'view:categories',
+  UPDATE = 'update:categories',
+  DELETE = 'delete:categories',
 }
 
 /**
@@ -189,6 +197,29 @@ export const AddressPermissions: Record<
   },
 };
 
+// Categorías
+export const CategoryPermissions: Record<
+  keyof typeof CategoryPermissionsEnum,
+  Permission
+> = {
+  CREATE: {
+    name: CategoryPermissionsEnum.CREATE,
+    description: 'Crear categorías',
+  },
+  VIEW: {
+    name: CategoryPermissionsEnum.VIEW,
+    description: 'Ver categorías',
+  },
+  UPDATE: {
+    name: CategoryPermissionsEnum.UPDATE,
+    description: 'Actualizar categorías',
+  },
+  DELETE: {
+    name: CategoryPermissionsEnum.DELETE,
+    description: 'Eliminar categorías',
+  },
+};
+
 /**
  * Todos los permisos en un solo objeto para facilitar importaciones
  */
@@ -198,6 +229,7 @@ export const ALL_PERMISSIONS = {
   PERMISSION: PermissionPermissions,
   CLIENT: ClientPermissions,
   ADDRESS: AddressPermissions,
+  CATEGORY: CategoryPermissions,
 };
 
 /**
@@ -209,4 +241,5 @@ export const PERMISSIONS_LIST: Permission[] = [
   ...Object.values(PermissionPermissions),
   ...Object.values(ClientPermissions),
   ...Object.values(AddressPermissions),
+  ...Object.values(CategoryPermissions),
 ];

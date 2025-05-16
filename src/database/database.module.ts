@@ -8,6 +8,7 @@ import { RolePermissionsSeederModule } from './seeders/roles/role-permissions.se
 import { UserRolesSeederModule } from './seeders/users/user-roles.seeder.module';
 import { PostgresConfigModule } from '../config/database/postgres/config.module';
 import { PostgresConfigService } from '../config/database/postgres/config.service';
+import { CategoriesSeederModule } from './seeders/categories/seeder.module';
 
 /**
  * Módulo de base de datos
@@ -40,14 +41,16 @@ import { PostgresConfigService } from '../config/database/postgres/config.servic
     PermissionsSeederModule,
     RolePermissionsSeederModule,
     UserRolesSeederModule,
+    CategoriesSeederModule,
   ],
   exports: [
-    UsersSeederModule, 
+    UsersSeederModule,
     AddressesSeederModule,
     RolesSeederModule,
     PermissionsSeederModule,
     RolePermissionsSeederModule,
     UserRolesSeederModule,
+    CategoriesSeederModule,
   ],
 })
 export class DatabaseModule {}
