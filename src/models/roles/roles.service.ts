@@ -8,8 +8,10 @@ import { RolesRepository } from './repositories/roles.repository';
 import { UserRole } from './entities/user-role.entity';
 import { RoleSerializer } from './serializers/role.serializer';
 import { Repository, DataSource } from 'typeorm';
-import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
 import { PermissionsService } from '../permissions/permissions.service';
+import { UsersRepository } from '../users/repositories/users.repository';
+// import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class RolesService {
@@ -20,6 +22,7 @@ export class RolesService {
     private readonly rolesRepository: RolesRepository,
     private readonly permissionsService: PermissionsService,
     @InjectDataSource() private readonly dataSource: DataSource,
+    private readonly usersRepository: UsersRepository,
   ) {
     this.userRoleRepository = this.dataSource.getRepository(UserRole);
   }
@@ -111,6 +114,25 @@ export class RolesService {
    * Asignar un rol a un usuario
    */
   async assignRoleToUser(userId: string, roleId: string): Promise<void> {
+    // Verificar primero el estado del usuario
+    const user = await this.usersRepository.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException(`Usuario con ID ${userId} no encontrado.`);
+    }
+
+    if (!user.isActive) {
+      throw new ConflictException(
+        `No se puede asignar un rol a un usuario inactivo (ID: ${userId}).`,
+      );
+    }
+
+    // Verificar que el rol exista (opcional, pero buena práctica)
+    const roleToAssign = await this.rolesRepository.findById(roleId);
+    if (!roleToAssign) {
+      throw new NotFoundException(`Rol con ID ${roleId} no encontrado.`);
+    }
+
     try {
       // Verificar si ya existe la asignación
       const existingAssignment = await this.userRoleRepository.findOne({
@@ -135,17 +157,17 @@ export class RolesService {
 
       // Obtener el slug del rol
       const role = await this.rolesRepository.findById(roleId);
-      
+
       // Actualizar el campo roles del usuario
       const userRepository = this.dataSource.getRepository('User');
       const user = await userRepository.findOne({ where: { id: userId } });
-      
+
       if (user && role) {
         // Inicializar roles si no existe
         if (!user.roles) {
           user.roles = [];
         }
-        
+
         // Añadir el slug del rol si no existe ya
         if (!user.roles.includes(role.slug)) {
           user.roles.push(role.slug);
@@ -179,19 +201,19 @@ export class RolesService {
       } else {
         // Obtener el slug del rol
         const role = await this.rolesRepository.findById(roleId);
-        
+
         // Actualizar el campo roles del usuario
         if (role) {
           const userRepository = this.dataSource.getRepository('User');
           const user = await userRepository.findOne({ where: { id: userId } });
-          
+
           if (user && Array.isArray(user.roles)) {
             // Eliminar el slug del rol del array
-            user.roles = user.roles.filter(slug => slug !== role.slug);
+            user.roles = user.roles.filter((slug) => slug !== role.slug);
             await userRepository.save(user);
           }
         }
-        
+
         this.logger.log(`Rol ${roleId} revocado del usuario ${userId}`);
       }
     } catch (error) {

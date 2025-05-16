@@ -6,11 +6,13 @@ import { RolesRepository } from './repositories/roles.repository';
 import { RolesService } from './roles.service';
 import { RolesController } from './roles.controller';
 import { PermissionsModule } from '../permissions/permissions.module';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Role, UserRole]),
     forwardRef(() => PermissionsModule),
+    UsersModule,
   ],
   controllers: [RolesController],
   providers: [RolesRepository, RolesService],
