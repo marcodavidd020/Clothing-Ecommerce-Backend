@@ -1,0 +1,168 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Testing y Validaciu00f3n
+
+Este proyecto probablemente implementa diferentes tipos de pruebas para validar el correcto funcionamiento de la aplicaciu00f3n.
+
+## Estructura de Pruebas
+
+Las pruebas normalmente se dividen en:
+
+*   **Pruebas Unitarias**: Se centran en componentes individuales como servicios o controladores.
+*   **Pruebas de Integraciu00f3n**: Validan la interacciu00f3n entre componentes.
+*   **Pruebas E2E (End-to-End)**: Prueban flujos completos desde el punto de vista del usuario.
+
+## Ubicaciu00f3n de las Pruebas
+
+*   **Pruebas unitarias**: Archivos `*.spec.ts` junto a los componentes que prueban.
+    *   Ejemplo: `src/models/users/users.service.spec.ts`
+*   **Pruebas e2e**: Directorio `test/` en la rau00edz del proyecto.
+    *   Ejemplo: `test/users.e2e-spec.ts`
+
+## Herramientas de Pruebas
+
+*   **Jest**: Framework principal de pruebas.
+*   **SuperTest**: Para pruebas HTTP en pruebas e2e.
+*   **TypeORM Testing**: Utilidades para probar interacciones con la base de datos.
+
+## Pruebas Unitarias
+
+Las pruebas unitarias verifican el comportamiento aislado de componentes individuales. Ejemplo:
+
+```typescript
+// En users.service.spec.ts
+describe('UsersService', () => {
+  let service: UsersService;
+  let usersRepository: MockType<UsersRepository>;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        UsersService,
+        {
+          provide: UsersRepository,
+          useFactory: createMockRepository,
+        },
+      ],
+    }).compile();
+
+    service = module.get<UsersService>(UsersService);
+    usersRepository = module.get(UsersRepository);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  describe('findById', () => {
+    it('should return a user by id', async () => {
+      const mockUser = { id: '1', email: 'test@example.com' };
+      usersRepository.findById.mockReturnValue(mockUser);
+
+      const result = await service.findById('1');
+      expect(result).toEqual(mockUser);
+      expect(usersRepository.findById).toHaveBeenCalledWith('1');
+    });
+
+    it('should throw NotFoundException when user not found', async () => {
+      usersRepository.findById.mockReturnValue(null);
+
+      await expect(service.findById('999')).rejects.toThrow(NotFoundException);
+    });
+  });
+});
+```
+
+## Pruebas E2E
+
+Las pruebas e2e simulan peticiones reales a la API y verifican las respuestas:
+
+```typescript
+// En test/users.e2e-spec.ts
+describe('Users API (e2e)', () => {
+  let app: INestApplication;
+  let jwtToken: string;
+
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe()); // Importante para validaciones de DTOs
+    await app.init();
+
+    // Obtener token para pruebas autenticadas
+    const loginResponse = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: 'admin@example.com', password: 'adminpass' })
+      .expect(200);
+
+    jwtToken = loginResponse.body.data.token;
+  });
+
+  it('GET /users - obtener usuarios (autenticado)', () => {
+    return request(app.getHttpServer())
+      .get('/users')
+      .set('Authorization', `Bearer ${jwtToken}`)
+      .expect(200)
+      .expect(res => {
+        expect(res.body.status).toBe('success');
+        expect(Array.isArray(res.body.data)).toBe(true);
+      });
+  });
+
+  it('GET /users - sin autenticaciu00f3n debe fallar', () => {
+    return request(app.getHttpServer())
+      .get('/users')
+      .expect(401);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+});
+```
+
+## Mocks y Factories
+
+Para facilitar las pruebas, el proyecto probablemente utiliza:
+
+*   **Factories**: Como [addresses/factory.ts](mdc:src/database/factories/addresses/factory.ts) para generar datos de prueba consistentes.
+*   **Mock Repositories**: Para simular interacciones con la base de datos sin necesidad de conexiones reales.
+
+```typescript
+type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
+
+export const createMockRepository = <T = any>(): MockRepository<T> => ({
+  findOne: jest.fn(),
+  find: jest.fn(),
+  create: jest.fn(),
+  save: jest.fn(),
+  update: jest.fn(),
+  delete: jest.fn(),
+  findById: jest.fn(),
+});
+```
+
+## Configuraciu00f3n de Jest
+
+La configuraciu00f3n de Jest probablemente estu00e9 en `jest.config.js` o en `package.json`, definiendo:
+
+*   Patrones de archivos de pruebas
+*   Configuraciu00f3n de cobertura
+*   Transformadores para TypeScript
+*   Configuraciu00f3n especu00edfica para pruebas e2e y unitarias
+
+## Pruebas de Base de Datos
+
+Para pruebas que requieren interacciones con la base de datos, el proyecto puede usar:
+
+*   **Bases de datos en memoria**: SQLite en memoria para pruebas ru00e1pidas.
+*   **Contenedores de prueba**: Docker con TypeORM para pruebas en entornos similares a producciu00f3n.
+*   **Bases de datos de prueba separadas**: Configuraciu00f3n para apuntar a una base de datos de prueba aislada.
+
+Este enfoque de pruebas asegura la calidad del cu00f3digo y el correcto funcionamiento de la API bajo diferentes condiciones.

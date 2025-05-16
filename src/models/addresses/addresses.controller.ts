@@ -14,6 +14,7 @@ import {
   NotFoundException,
   UseGuards,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -45,7 +46,10 @@ import {
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { RequirePermissions } from 'src/common/decorators/metadata/permissions.metadata';
 import { AddressPermissionsEnum } from 'src/common/constants/permissions.enum';
-import { serializeModel } from '../common/serializers/model.serializer';
+import {
+  serializeModel,
+  serializeModels,
+} from '../common/serializers/model.serializer';
 
 @ApiTags('Direcciones')
 @ApiBearerAuth('JWT-auth')
@@ -85,22 +89,35 @@ export class AddressesController {
           paginatedResult,
           'Direcciones recuperadas exitosamente',
         );
-      }
-
-      // Si no hay paginación, usamos la función original
-      let addresses: AddressSerializer[];
-
-      if (userId) {
-        addresses = await this.addressesService.findByUserId(userId);
       } else {
-        addresses = await this.addressesService.findAll();
+        if (userId) {
+          const addresses = await this.addressesService.findByUserId(userId);
+          const serializedAddresses = serializeModels(
+            addresses,
+            AddressSerializer,
+          );
+          return createSuccessResponse(
+            serializedAddresses,
+            'Direcciones recuperadas exitosamente',
+          );
+        }
+        const addresses = await this.addressesService.findAll();
+        const serializedAddresses = serializeModels(
+          addresses,
+          AddressSerializer,
+        );
+        return createSuccessResponse(
+          serializedAddresses,
+          'Direcciones recuperadas exitosamente',
+        );
       }
-
-      return createSuccessResponse(
-        addresses.map((address) => new AddressSerializer(address)),
-        'Direcciones recuperadas exitosamente',
-      );
     } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
       throw new ConflictException(
         createErrorResponse('Error al obtener las direcciones'),
       );
@@ -124,8 +141,9 @@ export class AddressesController {
       if (!address) {
         throw new NotFoundException(createNotFoundResponse('Dirección'));
       }
+      const serializedAddress = serializeModel(address, AddressSerializer);
       return createSuccessResponse(
-        new AddressSerializer(address),
+        serializedAddress,
         'Dirección encontrada exitosamente',
       );
     } catch (error) {

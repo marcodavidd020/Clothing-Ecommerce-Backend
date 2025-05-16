@@ -1,0 +1,61 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Serialización y Transformación de Datos
+
+La serialización es un aspecto clave para controlar la forma de los datos que se envían en las respuestas HTTP.
+
+## Componentes Principales
+
+1.  **Serializers (`serializers/*.serializer.ts`)**:
+    *   Ubicados en `src/models/[nombre-modelo]/serializers/` (ej. [user.serializer.ts](mdc:src/models/users/serializers/user.serializer.ts), [address.serializer.ts](mdc:src/models/addresses/serializers/address.serializer.ts)).
+    *   Extienden a menudo un `ModelSerializer` base de [src/common/serializers/model.serializer.ts](mdc:src/common/serializers/model.serializer.ts).
+    *   Utilizan decoradores de `class-transformer` como `@Expose()`, `@Exclude()`, y `@Type()` para definir cómo se transforman las entidades.
+    *   `@Expose()`: Marca una propiedad para ser incluida en la salida.
+    *   `@Exclude()`: Marca una propiedad para ser omitida de la salida (ej. contraseñas).
+    *   `@Type(() => OtroSerializer)`: Se usa para serializar propiedades anidadas o arrays de objetos complejos usando otro serializador.
+
+2.  **`ClassSerializerInterceptor`**:
+    *   Proporcionado por NestJS (`@nestjs/common`).
+    *   Se aplica usualmente a nivel de Controlador (ej. `@UseInterceptors(ClassSerializerInterceptor)` en [AddressesController](mdc:src/models/addresses/addresses.controller.ts)) o globalmente.
+    *   Este interceptor invoca automáticamente la lógica de `class-transformer` sobre los objetos devueltos por los manejadores de ruta del controlador, aplicando las reglas definidas en los Serializers.
+
+3.  **DTOs (`dto/*.dto.ts`)**:
+    *   Aunque principalmente para la validación de entrada, los DTOs también definen la forma esperada de los datos.
+    *   Se utilizan con `class-validator` para las validaciones (ej. `@IsString()`, `@IsNumber()`, `@IsOptional()`).
+    *   Las anotaciones `@ApiProperty()` de `@nestjs/swagger` en los DTOs y Serializers ayudan a generar la documentación de la API.
+
+## Flujo de Serialización en Respuestas
+
+1.  Un `Service` devuelve una entidad o un array de entidades (ej. `User` o `User[]`).
+2.  El `Controller` recibe estos datos del servicio.
+3.  Antes de que la respuesta se envíe al cliente, el `ClassSerializerInterceptor` intercepta el objeto de respuesta.
+4.  El interceptor utiliza la clase `Serializer` asociada (ej. `UserSerializer`) para transformar la entidad.
+    *   Las propiedades marcadas con `@Exclude()` se eliminan.
+    *   Solo las propiedades marcadas con `@Expose()` (o todas si no hay `@Expose()` explícitos y no se usa `@Exclude()` por defecto) se incluyen.
+    *   Las propiedades anidadas con `@Type()` se transforman recursivamente.
+5.  El objeto transformado se envía como respuesta HTTP.
+
+## Ejemplo de Uso en Serializer (`UserSerializer`)
+
+```typescript
+// En src/models/users/serializers/user.serializer.ts
+import { Exclude, Expose, Type } from 'class-transformer';
+import { AddressSerializer } from '../../addresses/serializers/address.serializer';
+
+export class UserSerializer extends ModelSerializer {
+  @Expose()
+  email: string;
+
+  @Exclude() // La contraseña nunca se expone
+  password: string;
+
+  @Expose()
+  @Type(() => AddressSerializer) // Las direcciones se serializan usando AddressSerializer
+  addresses: AddressSerializer[];
+  
+  // ... otras propiedades expuestas ...
+}
+```

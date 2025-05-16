@@ -1,0 +1,153 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Autenticaciu00f3n y Autorizaciu00f3n
+
+El sistema implementa un conjunto completo de mecanismos para la autenticaciu00f3n y autorizaciu00f3n basados en JWT (JSON Web Tokens) y un sistema de permisos.
+
+## Autenticaciu00f3n (Auth)
+
+### Estructura de Autenticaciu00f3n
+
+El mu00f3dulo de autenticaciu00f3n probablemente se encuentra en `src/auth/` y contiene:
+
+* **Controladores de Auth**: Manejan las solicitudes de inicio de sesiu00f3n, registro y gestiu00f3n de tokens.
+* **Servicios de Auth**: Contienen la lu00f3gica de negocio para la autenticaciu00f3n y validaciu00f3n de credenciales.
+* **Estrategias de Auth**: Implementan las estrategias de autenticaciu00f3n (JWT, local, etc.) usando Passport.js.
+
+### Guards de Autenticaciu00f3n
+
+La protecciu00f3n de rutas se implementa a travu00e9s de Guards como [jwt-auth.guard.ts](mdc:src/common/guards/jwt-auth.guard.ts):
+
+```typescript
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {
+  constructor(private reflector: Reflector) {
+    super();
+  }
+
+  canActivate(context: ExecutionContext) {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      return true;
+    }
+
+    return super.canActivate(context);
+  }
+}
+```
+
+Esto permite proteger rutas requiriendo un token JWT vu00e1lido y permite eximir ciertas rutas pu00fablicas.
+
+## Autorizaciu00f3n (Permisos)
+
+### Sistema de Permisos
+
+El proyecto usa un sistema de permisos basado en roles. Los permisos se definen probablemente en [permissions.enum.ts](mdc:src/common/constants/permissions.enum.ts):
+
+```typescript
+export enum UserPermissionsEnum {
+  CREATE = 'user:create',
+  VIEW = 'user:view',
+  UPDATE = 'user:update',
+  DELETE = 'user:delete',
+}
+
+export enum AddressPermissionsEnum {
+  CREATE = 'address:create',
+  VIEW = 'address:view',
+  UPDATE = 'address:update',
+  DELETE = 'address:delete',
+}
+
+// ... otros grupos de permisos ...
+```
+
+### Guards de Permisos
+
+La validaciu00f3n de permisos se implementa en [permissions.guard.ts](mdc:src/common/guards/permissions.guard.ts):
+
+```typescript
+@Injectable()
+export class PermissionsGuard implements CanActivate {
+  constructor(
+    private reflector: Reflector,
+    private authService: AuthService,
+  ) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const requiredPermissions = this.reflector.getAllAndOverride<string[]>(
+      PERMISSIONS_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+
+    if (!requiredPermissions) {
+      return true;
+    }
+
+    const { user } = context.switchToHttp().getRequest();
+    if (!user) {
+      return false;
+    }
+
+    return this.authService.userHasPermissions(user.id, requiredPermissions);
+  }
+}
+```
+
+### Decoradores de Permisos
+
+Los decoradores facilitan aplicar los requisitos de permisos a los controladores y rutas, por ejemplo [permissions.metadata.ts](mdc:src/common/decorators/metadata/permissions.metadata.ts):
+
+```typescript
+export const PERMISSIONS_KEY = 'permissions';
+
+export const RequirePermissions = (...permissions: string[]) =>
+  SetMetadata(PERMISSIONS_KEY, permissions);
+```
+
+## Uso en Controladores
+
+Los controladores protegidos utilizan una combinaciu00f3n de guards para autenticaciu00f3n y autorizaciu00f3n:
+
+```typescript
+@ApiTags('Usuarios')
+@ApiBearerAuth('JWT-auth')
+@Controller('users')
+@UseGuards(JwtAuthGuard, PermissionsGuard) // Protege todo el controlador
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
+  @Get()
+  @RequirePermissions(UserPermissionsEnum.VIEW) // Requiere permiso especu00edfico
+  async findAll(): Promise<ISuccessResponse<UserSerializer[]>> {
+    // ... implementaciu00f3n ...
+  }
+
+  @Post()
+  @RequirePermissions(UserPermissionsEnum.CREATE)
+  async create(@Body() createUserDto: CreateUserDto): Promise<ISuccessResponse<UserSerializer>> {
+    // ... implementaciu00f3n ...
+  }
+
+  // ... otros endpoints protegidos ...
+}
+```
+
+## Flujo de Autenticaciu00f3n
+
+1. Usuario envu00eda credenciales (email/contraseu00f1a) al endpoint de login.
+2. AuthService valida las credenciales usando UsersService.
+3. Si son vu00e1lidas, se genera un JWT con la informaciu00f3n del usuario y sus roles.
+4. El JWT se devuelve al cliente.
+5. El cliente incluye el JWT en el encabezado `Authorization` de las solicitudes posteriores.
+6. JwtAuthGuard valida el JWT y popula el objeto `request.user`.
+7. PermissionsGuard verifica si el usuario tiene los permisos necesarios para acceder al recurso.
+
+Este sistema proporciona una capa de seguridad robusta para la API, asegurando que solo los usuarios autorizados puedan acceder a recursos protegidos.

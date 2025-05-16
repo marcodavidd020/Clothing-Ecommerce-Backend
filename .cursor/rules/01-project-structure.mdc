@@ -1,0 +1,36 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Guía de Estructura del Proyecto NestJS
+
+Este proyecto sigue una arquitectura modular típica de NestJS, organizada principalmente dentro del directorio `src/`.
+
+## Directorios Clave en `src/`
+
+*   **`src/common`**: Contiene módulos, decoradores, DTOs, guardias, ayudantes (helpers), interceptores, interfaces y pipes que son compartidos y reutilizados a través de diferentes partes de la aplicación.
+    *   `src/common/constants`: Constantes globales como [permissions.enum.ts](mdc:src/common/constants/permissions.enum.ts).
+    *   `src/common/decorators`: Decoradores personalizados.
+    *   `src/common/dto`: DTOs comunes, como [pagination.dto.ts](mdc:src/common/dto/pagination.dto.ts).
+    *   `src/common/guards`: Guardias de ruta, como [jwt-auth.guard.ts](mdc:src/common/guards/jwt-auth.guard.ts) y [permissions.guard.ts](mdc:src/common/guards/permissions.guard.ts).
+    *   `src/common/helpers`: Funciones de utilidad, especialmente para formatear respuestas ([error.helper.ts](mdc:src/common/helpers/responses/error.helper.ts), [pagination.helper.ts](mdc:src/common/helpers/responses/pagination.helper.ts), [success.helper.ts](mdc:src/common/helpers/responses/success.helper.ts)).
+    *   `src/common/interfaces`: Definiciones de interfaces comunes, como [pagination.interface.ts](mdc:src/common/interfaces/pagination.interface.ts) y [response.interface.ts](mdc:src/common/interfaces/response.interface.ts).
+    *   `src/common/serializers`: Serializadores base como [model.serializer.ts](mdc:src/common/serializers/model.serializer.ts).
+*   **`src/config`**: Configuración de la aplicación, como la configuración de la base de datos y variables de entorno.
+*   **`src/database`**: Relacionado con la base de datos, incluyendo:
+    *   `src/database/factories`: Fábricas para generar datos de prueba/semilla, como [addresses/factory.ts](mdc:src/database/factories/addresses/factory.ts).
+    *   `src/database/seeders`: Semillas para poblar la base de datos, como [users/seeder.service.ts](mdc:src/database/seeders/users/seeder.service.ts).
+*   **`src/models`**: Es el corazón de la aplicación, donde se definen las diferentes entidades de dominio (modelos). Cada modelo típicamente tiene su propio directorio (ej. `users`, `addresses`, `roles`).
+    *   Ver la regla "[Estructura de un Módulo de Modelo](mdc:.cursor/rules/02-model-module-structure.mdc)" para más detalles.
+*   **`src/auth`**: Lógica relacionada con la autenticación y autorización.
+*   **`main.ts`**: [main.ts](mdc:src/main.ts) es el punto de entrada de la aplicación NestJS.
+
+## Flujo General
+
+1.  Las peticiones llegan a los Controladores (`*.controller.ts`) dentro de los módulos de `src/models`.
+2.  Los Controladores utilizan Servicios (`*.service.ts`) para manejar la lógica de negocio.
+3.  Los Servicios interactúan con Repositorios (`*.repository.ts`) para el acceso y manipulación de datos.
+4.  Las Entidades (`*.entity.ts`) definen la estructura de los datos y son usadas por TypeORM.
+5.  Los DTOs (`dto/*.dto.ts`) definen la forma de los datos para las peticiones y respuestas.
+6.  Los Serializadores (`serializers/*.serializer.ts`) transforman las entidades antes de ser enviadas en las respuestas, a menudo usando `class-transformer`.

@@ -1,0 +1,36 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Estructura de un Módulo de Modelo (ej. `users`, `addresses`)
+
+Cada entidad de dominio principal (modelo) reside en su propio directorio dentro de `src/models/`. Por ejemplo, el modelo `User` se encuentra en `src/models/users/` y el modelo `Address` en `src/models/addresses/`.
+
+La estructura interna de estos directorios de modelo es generalmente la siguiente:
+
+*   **`dto/`**: Contiene los Data Transfer Objects (DTOs).
+    *   `create-*.dto.ts`: DTO para la creación de la entidad. Ejemplo: [create-user.dto.ts](mdc:src/models/users/dto/create-user.dto.ts), [create-address.dto.ts](mdc:src/models/addresses/dto/create-address.dto.ts).
+    *   `update-*.dto.ts`: DTO para la actualización de la entidad. Ejemplo: [update-user.dto.ts](mdc:src/models/users/dto/update-user.dto.ts), [update-address.dto.ts](mdc:src/models/addresses/dto/update-address.dto.ts).
+*   **`entities/`**: Contiene las definiciones de las entidades de TypeORM.
+    *   `*.entity.ts`: Define la tabla de la base de datos y sus columnas. Ejemplo: [user.entity.ts](mdc:src/models/users/entities/user.entity.ts), [address.entity.ts](mdc:src/models/addresses/entities/address.entity.ts).
+*   **`interfaces/`**: Define interfaces TypeScript para la forma de los objetos del modelo y para los DTOs.
+    *   `*.interface.ts`: Ejemplo: [user.interface.ts](mdc:src/models/users/interfaces/user.interface.ts), [address.interface.ts](mdc:src/models/addresses/interfaces/address.interface.ts).
+*   **`repositories/`**: Contiene la lógica de acceso a datos, interactuando directamente con la base de datos (a través de TypeORM).
+    *   `*.repository.ts`: Extiende a menudo un `ModelRepository` base. Ejemplo: [users.repository.ts](mdc:src/models/users/repositories/users.repository.ts), [addresses.repository.ts](mdc:src/models/addresses/repositories/addresses.repository.ts).
+*   **`serializers/`**: Contiene clases para transformar las entidades antes de enviarlas en las respuestas HTTP, usando `class-transformer`.
+    *   `*.serializer.ts`: Define qué propiedades exponer o excluir. Ejemplo: [user.serializer.ts](mdc:src/models/users/serializers/user.serializer.ts), [address.serializer.ts](mdc:src/models/addresses/serializers/address.serializer.ts).
+*   **`*.controller.ts`**: Maneja las rutas HTTP, la validación de entrada y la delegación a los servicios. Ejemplo: [users.controller.ts](mdc:src/models/users/users.controller.ts), [addresses.controller.ts](mdc:src/models/addresses/addresses.controller.ts).
+*   **`*.service.ts`**: Contiene la lógica de negocio principal para el módulo. Ejemplo: [users.service.ts](mdc:src/models/users/users.service.ts), [addresses.service.ts](mdc:src/models/addresses/addresses.service.ts).
+*   **`*.module.ts`**: Define el módulo de NestJS, importando dependencias y exportando componentes. Ejemplo: `users.module.ts`, `addresses.module.ts`.
+
+## Interacción entre Componentes del Módulo
+
+1.  `Controller` recibe la petición HTTP.
+2.  `Controller` valida los datos de entrada (a menudo usando DTOs y `ValidationPipe`).
+3.  `Controller` llama a métodos del `Service`.
+4.  `Service` implementa la lógica de negocio.
+5.  `Service` usa el `Repository` para interactuar con la base de datos.
+6.  `Repository` obtiene/modifica `Entities`.
+7.  Los datos (a menudo `Entities`) se transforman usando `Serializers` antes de ser devueltos por el `Controller`.
+    *   El `ClassSerializerInterceptor` se usa a menudo a nivel de controlador para aplicar automáticamente esta transformación.
