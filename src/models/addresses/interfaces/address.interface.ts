@@ -4,10 +4,14 @@ export interface IAddress {
   id: string;
   street: string;
   city: string;
-  state: string;
+  department: string;
   postalCode: string;
-  country: string;
+  latitude: number;
+  longitude: number;
   isDefault: boolean;
+  isActive: boolean;
+  fullName: string;
+  phoneNumber: string;
   user?: User;
   createdAt: Date;
   updatedAt: Date;
@@ -16,9 +20,12 @@ export interface IAddress {
 export interface IAddressCreate {
   street: string;
   city: string;
-  state: string;
+  department: string;
   postalCode: string;
-  country: string;
+  latitude: number;
+  longitude: number;
+  fullName: string;
+  phoneNumber: string;
   isDefault?: boolean;
   userId: string;
 }
@@ -26,8 +33,11 @@ export interface IAddressCreate {
 export interface IAddressUpdate {
   street?: string;
   city?: string;
-  state?: string;
+  department?: string;
   postalCode?: string;
-  country?: string;
+  latitude?: number;
+  longitude?: number;
   isDefault?: boolean;
+  fullName?: string;
+  phoneNumber?: string;
 }

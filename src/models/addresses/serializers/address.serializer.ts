@@ -19,11 +19,11 @@ export class AddressSerializer extends ModelSerializer {
   city: string;
 
   @ApiProperty({
-    example: 'Madrid',
-    description: 'Estado o provincia',
+    example: 'Santa Cruz',
+    description: 'Departamento o provincia',
   })
   @Expose()
-  state: string;
+  department: string;
 
   @ApiProperty({
     example: '28001',
@@ -33,11 +33,32 @@ export class AddressSerializer extends ModelSerializer {
   postalCode: string;
 
   @ApiProperty({
-    example: 'España',
-    description: 'País',
+    example: 17.060816,
+    description: 'Latitud de la dirección',
   })
   @Expose()
-  country: string;
+  latitude: number;
+
+  @ApiProperty({
+    example: -63.163044,
+    description: 'Longitud de la dirección',
+  })
+  @Expose()
+  longitude: number;
+
+  @ApiProperty({
+    example: 'Juan Pérez',
+    description: 'Nombre completo para la entrega',
+  })
+  @Expose()
+  fullName: string;
+
+  @ApiProperty({
+    example: '+1234567890',
+    description: 'Número de teléfono para la entrega',
+  })
+  @Expose()
+  phoneNumber: string;
 
   @ApiProperty({
     example: true,

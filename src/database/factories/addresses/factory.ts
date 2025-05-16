@@ -55,7 +55,7 @@ export class AddressFactory {
    */
   static generate(overrideParams: Partial<Address> = {}): DeepPartial<Address> {
     const city = overrideParams.city || this.getRandomElement(this.cities);
-    const state = overrideParams.state || this.getStateForCity(city);
+    const department = overrideParams.department || this.getStateForCity(city);
 
     return {
       id: overrideParams.id, // Permitir ID fijo para tests
@@ -63,9 +63,8 @@ export class AddressFactory {
         overrideParams.street ||
         `${this.getRandomElement(this.streets)}, ${Math.floor(Math.random() * 100)}`,
       city,
-      state,
+      department,
       postalCode: overrideParams.postalCode || this.generatePostalCode(),
-      country: overrideParams.country || 'España',
       isDefault:
         overrideParams.isDefault !== undefined
           ? overrideParams.isDefault
