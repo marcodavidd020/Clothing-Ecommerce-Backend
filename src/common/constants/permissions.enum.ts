@@ -48,6 +48,14 @@ export enum ClientPermissionsEnum {
   DELETE = 'clients.delete',
 }
 
+// addresses
+export enum AddressPermissionsEnum {
+  VIEW = 'addresses.view',
+  CREATE = 'addresses.create',
+  UPDATE = 'addresses.update',
+  DELETE = 'addresses.delete',
+}
+
 /**
  * Permisos de usuarios con descripciones
  */
@@ -157,6 +165,31 @@ export const ClientPermissions: Record<
 };
 
 /**
+ * Permisos de direcciones con descripciones
+ */
+export const AddressPermissions: Record<
+  keyof typeof AddressPermissionsEnum,
+  Permission
+> = {
+  VIEW: {
+    name: AddressPermissionsEnum.VIEW,
+    description: 'Ver direcciones',
+  },
+  CREATE: {
+    name: AddressPermissionsEnum.CREATE,
+    description: 'Crear direcciones',
+  },
+  UPDATE: {
+    name: AddressPermissionsEnum.UPDATE,
+    description: 'Actualizar direcciones',
+  },
+  DELETE: {
+    name: AddressPermissionsEnum.DELETE,
+    description: 'Eliminar direcciones',
+  },
+};
+
+/**
  * Todos los permisos en un solo objeto para facilitar importaciones
  */
 export const ALL_PERMISSIONS = {
@@ -164,6 +197,7 @@ export const ALL_PERMISSIONS = {
   ROLE: RolePermissions,
   PERMISSION: PermissionPermissions,
   CLIENT: ClientPermissions,
+  ADDRESS: AddressPermissions,
 };
 
 /**
@@ -174,4 +208,5 @@ export const PERMISSIONS_LIST: Permission[] = [
   ...Object.values(RolePermissions),
   ...Object.values(PermissionPermissions),
   ...Object.values(ClientPermissions),
+  ...Object.values(AddressPermissions),
 ];

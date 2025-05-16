@@ -6,12 +6,44 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
  */
 export class UpdateAddressDto {
   @ApiPropertyOptional({
-    example: 'Calle Principal 123',
-    description: 'Calle y número',
+    example: 'Juan Pérez',
+    description: 'Nombre completo',
   })
   @IsOptional()
   @IsNotEmpty()
-  street?: string;
+  fullName?: string;
+
+  @ApiPropertyOptional({
+    example: '3900000000',
+    description: 'Número de teléfono',
+  })
+  @IsOptional()
+  @IsNotEmpty()
+  phoneNumber?: string;
+
+  @ApiPropertyOptional({
+    example: 17.060816,
+    description: 'Latitud',
+  })
+  @IsOptional()
+  @IsNotEmpty()
+  latitude?: number;
+
+  @ApiPropertyOptional({
+    example: -63.163044,
+    description: 'Longitud',
+  })
+  @IsOptional()
+  @IsNotEmpty()
+  longitude?: number;
+
+  @ApiPropertyOptional({
+    example: 'Santa Cruz',
+    description: 'Departamento',
+  })
+  @IsOptional()
+  @IsNotEmpty()
+  department?: string;
 
   @ApiPropertyOptional({
     example: 'Madrid',
@@ -36,14 +68,6 @@ export class UpdateAddressDto {
   @IsOptional()
   @IsNotEmpty()
   postalCode?: string;
-
-  @ApiPropertyOptional({
-    example: 'España',
-    description: 'País',
-  })
-  @IsOptional()
-  @IsNotEmpty()
-  country?: string;
 
   @ApiPropertyOptional({
     example: true,

@@ -7,6 +7,36 @@ import { UserExists } from '../../../common/decorators/validations/UserExists';
  */
 export class CreateAddressDto {
   @ApiProperty({
+    example: 'Juan Pérez',
+    description: 'Nombre completo',
+  })
+  @IsNotEmpty()
+  fullName: string;
+
+  @ApiProperty({
+    example: '3900000000',
+    description: 'Número de teléfono',
+  })
+  @IsNotEmpty()
+  phoneNumber: string;
+
+  // latitude
+  @ApiProperty({
+    example: 17.060816,
+    description: 'Latitud',
+  })
+  @IsNotEmpty()
+  latitude: number;
+
+  // longitude
+  @ApiProperty({
+    example: -63.163044,
+    description: 'Longitud',
+  })
+  @IsNotEmpty()
+  longitude: number;
+
+  @ApiProperty({
     example: 'Calle Principal 123',
     description: 'Calle y número',
   })
@@ -14,18 +44,18 @@ export class CreateAddressDto {
   street: string;
 
   @ApiProperty({
-    example: 'Madrid',
+    example: 'Santa Cruz de la Sierra',
     description: 'Ciudad',
   })
   @IsNotEmpty()
   city: string;
 
   @ApiProperty({
-    example: 'Madrid',
+    example: 'Santa Cruz',
     description: 'Estado o provincia',
   })
   @IsNotEmpty()
-  state: string;
+  department: string;
 
   @ApiProperty({
     example: '28001',
@@ -33,13 +63,6 @@ export class CreateAddressDto {
   })
   @IsNotEmpty()
   postalCode: string;
-
-  @ApiProperty({
-    example: 'España',
-    description: 'País',
-  })
-  @IsNotEmpty()
-  country: string;
 
   @ApiPropertyOptional({
     example: true,
