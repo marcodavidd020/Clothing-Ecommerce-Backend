@@ -10,6 +10,7 @@ import { PostgresConfigModule } from '../config/database/postgres/config.module'
 import { PostgresConfigService } from '../config/database/postgres/config.service';
 import { CategoriesSeederModule } from './seeders/categories/seeder.module';
 import { ProductsSeederModule } from './seeders/products/products.seeder.module';
+import { CartsSeederModule } from './seeders/carts/seeder.module';
 
 /**
  * Módulo de base de datos
@@ -44,6 +45,7 @@ import { ProductsSeederModule } from './seeders/products/products.seeder.module'
     UserRolesSeederModule,
     CategoriesSeederModule,
     ProductsSeederModule,
+    CartsSeederModule,
   ],
   exports: [
     UsersSeederModule,
@@ -54,6 +56,7 @@ import { ProductsSeederModule } from './seeders/products/products.seeder.module'
     UserRolesSeederModule,
     CategoriesSeederModule,
     ProductsSeederModule,
+    CartsSeederModule,
   ],
 })
 export class DatabaseModule {}

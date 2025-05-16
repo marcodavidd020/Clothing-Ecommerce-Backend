@@ -1,6 +1,7 @@
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ModelSerializer } from '../../common/serializers/model.serializer';
+import { ProductSerializer } from './product.serializer';
 
 export class ProductVariantSerializer extends ModelSerializer {
   @Expose()
@@ -22,4 +23,12 @@ export class ProductVariantSerializer extends ModelSerializer {
   @Expose()
   @ApiProperty({ description: 'ID del producto al que pertenece esta variante', example: '550e8400-e29b-41d4-a716-446655440000' })
   productId: string;
-} 
+
+  @Expose()
+  @Type(() => ProductSerializer)
+  @ApiPropertyOptional({
+    description: 'Producto al que pertenece esta variante',
+    type: () => ProductSerializer,
+  })
+  product?: ProductSerializer;
+}

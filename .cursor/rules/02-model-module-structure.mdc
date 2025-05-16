@@ -1,7 +1,7 @@
 ---
-description:
-globs:
-alwaysApply: false
+description: 
+globs: 
+alwaysApply: true
 ---
 # Estructura de un Módulo de Modelo (ej. `users`, `addresses`)
 
