@@ -5,40 +5,49 @@ import { ProductVariant } from '../entities/product-variant.entity';
 import { CreateProductVariantDto } from '../dto/create-product-variant.dto';
 import { UpdateProductVariantDto } from '../dto/update-product-variant.dto';
 import { ModelRepository } from '../../common/repositories/model.repository';
+import { ProductVariantSerializer } from '../serializers/product-variant.serializer';
 
 @Injectable()
 export class ProductVariantsRepository extends ModelRepository<
   ProductVariant,
-  ProductVariant
+  ProductVariantSerializer
 > {
   constructor(@InjectDataSource() dataSource: DataSource) {
-    super(ProductVariant);
+    super(ProductVariantSerializer);
     this.manager = dataSource.manager;
     this.repository = dataSource.getRepository(ProductVariant);
   }
 
-  async findById(id: string): Promise<ProductVariant | null> {
+  async findRawById(id: string): Promise<ProductVariant | null> {
     return this.repository.findOne({ where: { id, isActive: true } });
   }
 
-  async findByProductId(productId: string): Promise<ProductVariant[]> {
-    return this.repository.find({ where: { productId, isActive: true } });
+  async findById(id: string): Promise<ProductVariantSerializer | null> {
+    const entity = await this.repository.findOne({ where: { id, isActive: true } });
+    return entity ? this.transform(entity) : null;
+  }
+
+  async findByProductId(productId: string): Promise<ProductVariantSerializer[]> {
+    const entities = await this.repository.find({ where: { productId, isActive: true } });
+    return this.transformMany(entities);
   }
 
   async create(
     data: CreateProductVariantDto & { productId: string },
-  ): Promise<ProductVariant> {
+  ): Promise<ProductVariantSerializer> {
     const variantData = { ...data, isActive: true };
     const newVariant = this.repository.create(variantData);
-    return this.repository.save(newVariant);
+    const savedEntity = await this.repository.save(newVariant);
+    return this.transform(savedEntity);
   }
 
   async update(
     id: string,
     data: UpdateProductVariantDto,
-  ): Promise<ProductVariant | null> {
+  ): Promise<ProductVariantSerializer | null> {
     await this.repository.update(id, data);
-    return this.repository.findOne({ where: { id, isActive: true } });
+    const updatedEntity = await this.repository.findOne({ where: { id, isActive: true } });
+    return updatedEntity ? this.transform(updatedEntity) : null;
   }
 
   async deactivate(id: string): Promise<boolean> {

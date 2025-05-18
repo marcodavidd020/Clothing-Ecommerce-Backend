@@ -12,24 +12,27 @@ import { ProductSerializer } from './serializers/product.serializer';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { createNotFoundResponse } from 'src/common/helpers/responses/error.helper';
-import { slugify } from 'src/common/helpers/string.helper';
 import {
   IPaginatedResult,
   IPaginationOptions,
 } from '../../common/interfaces/pagination.interface';
 import { IProductsService } from './interfaces/product.interface';
 import { Product } from './entities/product.entity';
+import { ProductVariant } from './entities/product-variant.entity';
+import { ProductImage } from './entities/product-image.entity';
 import { plainToInstance } from 'class-transformer';
 import { ApplyDiscountPercentageDto } from './dto/apply-discount-percentage.dto';
 import { ApplyFixedDiscountDto } from './dto/apply-fixed-discount.dto';
 import { ChangeProductStockDto } from './dto/change-product-stock.dto';
-import { EntityManager } from 'typeorm';
+import { DataSource, EntityManager, In } from 'typeorm';
+import { Category } from '../categories/entities/category.entity';
 
 @Injectable()
 export class ProductsService implements IProductsService {
   private readonly logger = new Logger(ProductsService.name);
 
   constructor(
+    private readonly dataSource: DataSource,
     private readonly productsRepository: ProductsRepository,
     private readonly variantsRepository: ProductVariantsRepository,
     private readonly imagesRepository: ProductImagesRepository,
@@ -80,20 +83,14 @@ export class ProductsService implements IProductsService {
   async findPaginated(
     options: IPaginationOptions,
   ): Promise<IPaginatedResult<ProductSerializer>> {
-    const paginatedResult: IPaginatedResult<Product> =
+    const paginatedResult: IPaginatedResult<ProductSerializer> =
       await this.productsRepository.paginate(options, [
         'categories',
         'variants',
         'images',
       ]);
 
-    const filteredData = paginatedResult.data.map((product) =>
-      this.filterActiveRelations(product),
-    );
-
-    const serializedData = this.transformManyToSerializer(filteredData);
-
-    return { ...paginatedResult, data: serializedData };
+    return paginatedResult;
   }
 
   /**
@@ -132,16 +129,10 @@ export class ProductsService implements IProductsService {
    * Crear un nuevo producto
    */
   async create(productData: CreateProductDto): Promise<ProductSerializer> {
-    // Primero, verificar si el slug ya existe
-    const existingProductBySlug = await this.productsRepository.findBySlug(
+    const existingProductBySlug = await this.productsRepository.findRawBySlug(
       productData.slug,
-      // true, // Opcional: incluir desactivados.
-      // El método findBySlug actual del repo no toma este segundo argumento directamente.
-      // Para buscar incluyendo inactivos, se debería modificar findBySlug en el repositorio
-      // o crear un método específico para ello. Por ahora, busca solo activos.
-      // Si `ProductsRepository.findBySlug` se modifica para aceptar `includeInactive=true`,
-      // y queremos esa lógica, se debe pasar `true` aquí.
     );
+
     if (existingProductBySlug) {
       throw new ConflictException({
         message: `Slug ${productData.slug} is already in use`,
@@ -157,36 +148,73 @@ export class ProductsService implements IProductsService {
       });
     }
 
-    // Si el slug no existe, proceder a crear el producto
-    const createdProductEntity =
-      await this.productsRepository.create(productData);
+    return this.dataSource.transaction(async (transactionalEntityManager) => {
+      const productRepo = transactionalEntityManager.getRepository(Product);
+      const categoryRepo = transactionalEntityManager.getRepository(Category);
+      const variantRepo =
+        transactionalEntityManager.getRepository(ProductVariant);
+      const imageRepo = transactionalEntityManager.getRepository(ProductImage);
 
-    // Manejar variantes y imágenes aquí si es necesario, o asegurar que el findById las cargue
-    // (ProductsRepository.create no carga relaciones de variantes/imágenes por sí mismo)
-    if (productData.variants && productData.variants.length > 0) {
-      await Promise.all(
-        productData.variants.map((variantData) =>
-          this.variantsRepository.create({
+      const product = new Product();
+      product.name = productData.name;
+      product.slug = productData.slug;
+      product.description = productData.description ?? null;
+      product.price = productData.price;
+      product.discountPrice = productData.discountPrice ?? null;
+      product.stock = productData.stock ?? 0;
+      product.image = productData.image ?? null;
+      product.isActive = true;
+
+      if (productData.categoryIds && productData.categoryIds.length > 0) {
+        const categories = await categoryRepo.findBy({
+          id: In(productData.categoryIds),
+        });
+        product.categories = categories;
+      } else {
+        product.categories = [];
+      }
+
+      const savedProduct = await productRepo.save(product);
+
+      if (productData.variants && productData.variants.length > 0) {
+        const variantsToCreate = productData.variants.map((variantData) => {
+          const newVariant = variantRepo.create({
             ...variantData,
-            productId: createdProductEntity.id,
-          }),
-        ),
-      );
-    }
-    if (productData.images && productData.images.length > 0) {
-      await Promise.all(
-        productData.images.map((imageData) =>
-          this.imagesRepository.create({
-            ...imageData,
-            productId: createdProductEntity.id,
-          }),
-        ),
-      );
-    }
+            productId: savedProduct.id,
+            isActive: true,
+          });
+          return newVariant;
+        });
+        await variantRepo.save(variantsToCreate);
+      }
 
-    // Volver a buscar para obtener todas las relaciones y aplicar filtros/serialización
-    // Esto asegura que las variantes/imágenes recién creadas se incluyan en la respuesta.
-    return this.findById(createdProductEntity.id);
+      if (productData.images && productData.images.length > 0) {
+        const imagesToCreate = productData.images.map((imageData) => {
+          const newImage = imageRepo.create({
+            ...imageData,
+            productId: savedProduct.id,
+            isActive: true,
+          });
+          return newImage;
+        });
+        await imageRepo.save(imagesToCreate);
+      }
+
+      const fullProduct = await productRepo.findOne({
+        where: { id: savedProduct.id },
+        relations: ['categories', 'variants', 'images'],
+      });
+      if (!fullProduct) {
+        this.logger.error(
+          `Producto no encontrado inmediatamente después de crear y dentro de la transacción: ${savedProduct.id}`,
+        );
+        throw new NotFoundException(
+          'Producto no encontrado después de la creación.',
+        );
+      }
+      const filteredProduct = this.filterActiveRelations(fullProduct);
+      return this.transformToSerializer(filteredProduct);
+    });
   }
 
   /**
@@ -196,44 +224,119 @@ export class ProductsService implements IProductsService {
     id: string,
     productData: UpdateProductDto,
   ): Promise<ProductSerializer | null> {
-    const updatedProductEntity = await this.productsRepository.update(
-      id,
-      productData,
-    );
-    if (!updatedProductEntity) {
-      return null;
-    }
+    return this.dataSource.transaction(async (transactionalEntityManager) => {
+      const productRepo = transactionalEntityManager.getRepository(Product);
+      const categoryRepo = transactionalEntityManager.getRepository(Category);
+      const variantRepo =
+        transactionalEntityManager.getRepository(ProductVariant);
+      const imageRepo = transactionalEntityManager.getRepository(ProductImage);
 
-    // Manejar variantes e imágenes
-    if (productData.variants) {
-      if (productData.replaceVariants) {
-        await this.variantsRepository.deactivateByProductId(id); // Usar desactivación lógica
-      }
-      await Promise.all(
-        productData.variants.map((variantData) =>
-          this.variantsRepository.create({
-            ...variantData,
-            productId: id,
-          }),
-        ),
-      );
-    }
-    if (productData.images) {
-      if (productData.replaceImages) {
-        await this.imagesRepository.deactivateByProductId(id); // Usar desactivación lógica
-      }
-      await Promise.all(
-        productData.images.map((imageData) =>
-          this.imagesRepository.create({
-            ...imageData,
-            productId: id,
-          }),
-        ),
-      );
-    }
+      let product = await productRepo.findOne({
+        where: { id, isActive: true },
+        relations: ['categories', 'variants', 'images'],
+      });
 
-    // Volver a buscar para obtener el estado completo, aplicar filtros y serializar
-    return this.findById(id);
+      if (!product) {
+        return null;
+      }
+
+      const updatePayload: Partial<Product> = {};
+      if (productData.name !== undefined) updatePayload.name = productData.name;
+      if (productData.slug !== undefined) updatePayload.slug = productData.slug;
+      if (productData.description !== undefined)
+        updatePayload.description = productData.description ?? null;
+      if (productData.price !== undefined)
+        updatePayload.price = productData.price;
+      if (productData.discountPrice !== undefined)
+        updatePayload.discountPrice = productData.discountPrice ?? null;
+      if (productData.stock !== undefined)
+        updatePayload.stock = productData.stock ?? 0;
+      if (productData.image !== undefined)
+        updatePayload.image = productData.image ?? null;
+      if (productData.isActive !== undefined)
+        updatePayload.isActive = productData.isActive;
+
+      productRepo.merge(product, updatePayload as Product);
+
+      if (productData.categoryIds !== undefined) {
+        if (productData.replaceCategories) {
+          product.categories = [];
+        }
+        if (productData.categoryIds.length > 0) {
+          const categories = await categoryRepo.findBy({
+            id: In(productData.categoryIds),
+          });
+          if (productData.replaceCategories) {
+            product.categories = categories;
+          } else {
+            const existingCategoryIds = product.categories.map((cat) => cat.id);
+            const uniqueNewCategories = categories.filter(
+              (cat) => !existingCategoryIds.includes(cat.id),
+            );
+            product.categories.push(...uniqueNewCategories);
+          }
+        } else if (productData.replaceCategories) {
+          product.categories = [];
+        }
+      }
+
+      const savedProduct = await productRepo.save(product);
+
+      if (productData.variants) {
+        if (productData.replaceVariants) {
+          await variantRepo.update(
+            { productId: id, isActive: true },
+            { isActive: false },
+          );
+        }
+        if (productData.variants.length > 0) {
+          const variantsToCreate = productData.variants.map((variantDto) =>
+            variantRepo.create({
+              ...variantDto,
+              productId: id,
+              isActive: true,
+            }),
+          );
+          await variantRepo.save(variantsToCreate);
+        }
+      }
+
+      if (productData.images) {
+        if (productData.replaceImages) {
+          await imageRepo.update(
+            { productId: id, isActive: true },
+            { isActive: false },
+          );
+        }
+        if (productData.images.length > 0) {
+          const imagesToCreate = productData.images.map((imageDto) =>
+            imageRepo.create({
+              ...imageDto,
+              productId: id,
+              isActive: true,
+            }),
+          );
+          await imageRepo.save(imagesToCreate);
+        }
+      }
+
+      const fullUpdatedProduct = await productRepo.findOne({
+        where: { id: savedProduct.id },
+        relations: ['categories', 'variants', 'images'],
+      });
+
+      if (!fullUpdatedProduct) {
+        this.logger.error(
+          `Producto no encontrado inmediatamente después de actualizar y dentro de la transacción: ${savedProduct.id}`,
+        );
+        throw new NotFoundException(
+          'Producto no encontrado después de la actualización.',
+        );
+      }
+
+      const filteredProduct = this.filterActiveRelations(fullUpdatedProduct);
+      return this.transformToSerializer(filteredProduct);
+    });
   }
 
   /**
@@ -313,7 +416,9 @@ export class ProductsService implements IProductsService {
     const currentStock = product.stock ?? 0;
     product.stock = currentStock + dto.amount;
     if (product.stock < 0) {
-      throw new BadRequestException('El stock resultante no puede ser negativo.');
+      throw new BadRequestException(
+        'El stock resultante no puede ser negativo.',
+      );
     }
     await this.productsRepository.save(product);
     return this.transformToSerializer(product);
@@ -334,15 +439,16 @@ export class ProductsService implements IProductsService {
     let product: Product | null;
 
     if (manager) {
-      const transactionalProductRepo = manager.getRepository(Product);
-      product = await transactionalProductRepo.findOneBy({ id: productId });
+      const repo = manager.getRepository(Product);
+      product = await repo.findOneBy({ id: productId });
     } else {
-      // Usar el método del repositorio que devuelve la entidad
       product = await this.productsRepository.findEntityById(productId);
     }
 
     if (!product) {
-      this.logger.error(`Producto con ID ${productId} no encontrado durante cambio de stock interno.`);
+      this.logger.error(
+        `Producto con ID ${productId} no encontrado durante cambio de stock interno.`,
+      );
       throw new NotFoundException(
         `Producto con ID ${productId} no encontrado.`,
       );
@@ -350,16 +456,18 @@ export class ProductsService implements IProductsService {
 
     const newStock = (product.stock ?? 0) + quantityChange;
     if (newStock < 0) {
-      this.logger.error(`Stock insuficiente para producto ${productId}. Solicitado: ${quantityChange}, Actual: ${product.stock}`);
+      this.logger.error(
+        `Stock insuficiente para producto ${productId}. Solicitado: ${quantityChange}, Actual: ${product.stock}`,
+      );
       throw new ConflictException(
-        `Stock insuficiente para el producto ${product.name}. Stock actual: ${product.stock}, se intentó reducir en ${Math.abs(quantityChange)}.`
+        `Stock insuficiente para el producto ${product.name}. Stock actual: ${product.stock}, se intentó reducir en ${Math.abs(quantityChange)}.`,
       );
     }
     product.stock = newStock;
 
     if (manager) {
-      const transactionalProductRepo = manager.getRepository(Product);
-      return transactionalProductRepo.save(product);
+      const repo = manager.getRepository(Product);
+      return repo.save(product);
     } else {
       return this.productsRepository.save(product);
     }

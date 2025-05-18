@@ -17,6 +17,7 @@ import { OrderItem } from './entities/order-item.entity';
 import { UsersRepository } from '../users/repositories/users.repository';
 import { AddressesRepository } from '../addresses/repositories/addresses.repository';
 import { ProductVariantsRepository } from '../products/repositories/product-variants.repository';
+import { ProductVariant } from '../products/entities/product-variant.entity';
 import { CouponsRepository } from '../coupons/repositories/coupons.repository';
 import { PaymentsService } from '../payments/payments.service'; // Para crear el registro de pago
 import { UserCouponsRepository } from '../user-coupons/repositories/user-coupons.repository';
@@ -93,38 +94,36 @@ export class OrdersService {
 
     try {
       for (const itemDto of items) {
-        const variant = await this.productVariantsRepository.findById(
+        const variantEntity = await this.productVariantsRepository.findRawById(
           itemDto.product_variant_id,
         );
-        if (!variant || !variant.product) {
+        if (!variantEntity || !variantEntity.product) {
           throw new NotFoundException(
             `Variante de producto con ID ${itemDto.product_variant_id} no encontrada.`,
           );
         }
-        if (variant.stock < itemDto.quantity) {
+        if (variantEntity.stock < itemDto.quantity) {
           throw new ConflictException(
-            `Stock insuficiente para la variante ${variant.product.name} - ${variant.color}/${variant.size}. Disponible: ${variant.stock}`,
+            `Stock insuficiente para la variante ${variantEntity.product.name} - ${variantEntity.color}/${variantEntity.size}. Disponible: ${variantEntity.stock}`,
           );
         }
 
-        // Determinar precio final del item (precio base del producto, podría tener descuento de producto)
         const itemPrice =
-          variant.product.discountPrice ?? variant.product.price;
+          variantEntity.product.discountPrice ?? variantEntity.product.price;
 
         const orderItem = new OrderItem();
-        orderItem.product_variant_id = variant.id;
-        orderItem.productVariant = variant; // Temporal para referencia, no se guarda directamente así en esta etapa
+        orderItem.product_variant_id = variantEntity.id;
+        orderItem.productVariant = variantEntity;
         orderItem.quantity = itemDto.quantity;
-        orderItem.price = +itemPrice; // Asegurar que es número
+        orderItem.price = +itemPrice;
         orderItemsEntities.push(orderItem);
         orderTotalAmount += orderItem.calculateSubtotal();
 
-        // Actualizar stock de la variante
-        variant.removeStock(itemDto.quantity);
-        await queryRunner.manager.save(variant);
-        // También se podría actualizar el stock general del producto si es necesario
+        variantEntity.removeStock(itemDto.quantity);
+        await queryRunner.manager.save(ProductVariant, variantEntity);
+
         await this.productsService.changeStockInternal(
-          variant.productId,
+          variantEntity.productId,
           -itemDto.quantity,
           queryRunner.manager,
         );
@@ -329,14 +328,14 @@ export class OrdersService {
       // Reversión de stock
       for (const item of order.items) {
         if (item.product_variant_id) {
-          const variant = await this.productVariantsRepository.findById(
+          const variantEntity = await this.productVariantsRepository.findRawById(
             item.product_variant_id,
           );
-          if (variant) {
-            variant.addStock(item.quantity);
-            await queryRunner.manager.save(variant);
+          if (variantEntity) {
+            variantEntity.addStock(item.quantity);
+            await queryRunner.manager.save(ProductVariant, variantEntity);
             await this.productsService.changeStockInternal(
-              variant.productId,
+              variantEntity.productId,
               item.quantity,
               queryRunner.manager,
             );

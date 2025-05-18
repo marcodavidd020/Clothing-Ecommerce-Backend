@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { ProductImage } from '../entities/product-image.entity';
 import { CreateProductImageDto } from '../dto/create-product-image.dto';
