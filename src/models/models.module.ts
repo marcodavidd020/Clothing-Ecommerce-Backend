@@ -6,6 +6,7 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { CartsModule } from './carts/carts.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { CartsModule } from './carts/carts.module';
     CategoriesModule,
     ProductsModule,
     CartsModule,
+    PaymentsModule,
   ],
   exports: [
     UsersModule,
@@ -25,6 +27,7 @@ import { CartsModule } from './carts/carts.module';
     CategoriesModule,
     ProductsModule,
     CartsModule,
+    PaymentsModule,
   ],
 })
 export class ModelsModule {}
