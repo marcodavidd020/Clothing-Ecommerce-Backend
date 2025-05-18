@@ -11,6 +11,8 @@ import { CategoriesSeederService } from './seeders/categories/categories.seeder'
 import { ProductsSeederService } from './seeders/products/products.seeder';
 import { CartsSeederService } from './seeders/carts/carts.seeder';
 import { PaymentsSeederService } from './seeders/payments/payments.seeder';
+import { CouponsSeederService } from './seeders/coupons/coupons.seeder';
+import { UserCouponsSeederService } from './seeders/user-coupons/user-coupons.seeder';
 
 async function bootstrap() {
   const logger = new Logger('Seeder');
@@ -59,6 +61,14 @@ async function bootstrap() {
     logger.log('Ejecutando seeder de pagos...');
     const paymentsSeederService = appContext.get(PaymentsSeederService);
     await paymentsSeederService.seed();
+
+    logger.log('Ejecutando seeder de cupones...');
+    const couponsSeederService = appContext.get(CouponsSeederService);
+    await couponsSeederService.seed();
+
+    logger.log('Ejecutando seeder de asignaciones de cupones a usuarios...');
+    const userCouponsSeederService = appContext.get(UserCouponsSeederService);
+    await userCouponsSeederService.seed();
 
     logger.log('Proceso de seed completado exitosamente!');
   } catch (error) {
