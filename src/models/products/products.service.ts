@@ -23,6 +23,7 @@ import { plainToInstance } from 'class-transformer';
 import { ApplyDiscountPercentageDto } from './dto/apply-discount-percentage.dto';
 import { ApplyFixedDiscountDto } from './dto/apply-fixed-discount.dto';
 import { ChangeProductStockDto } from './dto/change-product-stock.dto';
+import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class ProductsService implements IProductsService {
@@ -305,16 +306,62 @@ export class ProductsService implements IProductsService {
     productId: string,
     dto: ChangeProductStockDto,
   ): Promise<ProductSerializer> {
-    const productEntity = await this.productsRepository.findById(productId);
-    if (!productEntity) {
-      throw new NotFoundException(createNotFoundResponse('Producto'));
+    const product = await this.productsRepository.findById(productId);
+    if (!product) {
+      throw new NotFoundException('Producto no encontrado.');
     }
-    try {
-      productEntity.changeStock(dto.amount);
-    } catch (error) {
-      throw new BadRequestException(error.message);
+    const currentStock = product.stock ?? 0;
+    product.stock = currentStock + dto.amount;
+    if (product.stock < 0) {
+      throw new BadRequestException('El stock resultante no puede ser negativo.');
     }
-    const savedProduct = await this.productsRepository.save(productEntity);
-    return this.transformToSerializer(savedProduct);
+    await this.productsRepository.save(product);
+    return this.transformToSerializer(product);
+  }
+
+  /**
+   * Método interno para modificar el stock de un producto.
+   * Utilizado por otros servicios (ej. OrdersService) dentro de una transacción.
+   * @param productId ID del producto
+   * @param quantityChange Cantidad a sumar (positivo) o restar (negativo) al stock
+   * @param manager EntityManager opcional para la transacción
+   */
+  async changeStockInternal(
+    productId: string,
+    quantityChange: number,
+    manager?: EntityManager,
+  ): Promise<Product> {
+    let product: Product | null;
+
+    if (manager) {
+      const transactionalProductRepo = manager.getRepository(Product);
+      product = await transactionalProductRepo.findOneBy({ id: productId });
+    } else {
+      // Usar el método del repositorio que devuelve la entidad
+      product = await this.productsRepository.findEntityById(productId);
+    }
+
+    if (!product) {
+      this.logger.error(`Producto con ID ${productId} no encontrado durante cambio de stock interno.`);
+      throw new NotFoundException(
+        `Producto con ID ${productId} no encontrado.`,
+      );
+    }
+
+    const newStock = (product.stock ?? 0) + quantityChange;
+    if (newStock < 0) {
+      this.logger.error(`Stock insuficiente para producto ${productId}. Solicitado: ${quantityChange}, Actual: ${product.stock}`);
+      throw new ConflictException(
+        `Stock insuficiente para el producto ${product.name}. Stock actual: ${product.stock}, se intentó reducir en ${Math.abs(quantityChange)}.`
+      );
+    }
+    product.stock = newStock;
+
+    if (manager) {
+      const transactionalProductRepo = manager.getRepository(Product);
+      return transactionalProductRepo.save(product);
+    } else {
+      return this.productsRepository.save(product);
+    }
   }
 }

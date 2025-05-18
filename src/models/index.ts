@@ -26,5 +26,15 @@ export { PaymentsService } from './payments/payments.service';
 export { PaymentSerializer } from './payments/serializers/payment.serializer';
 // Fin Payments Exports
 
+// Orders Exports
+export { Order } from './orders/entities/order.entity';
+export { OrderItem } from './orders/entities/order-item.entity';
+export { OrdersRepository } from './orders/repositories/orders.repository';
+export { OrdersModule } from './orders/orders.module';
+export { OrdersService } from './orders/orders.service';
+export { OrderSerializer } from './orders/serializers/order.serializer';
+export { OrderItemSerializer } from './orders/serializers/order-item.serializer';
+// Fin Orders Exports
+
 // Models
 export { ModelsModule } from './models.module';

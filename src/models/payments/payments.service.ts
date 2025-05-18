@@ -18,6 +18,8 @@ import {
   IPaginationOptions,
   IPaginatedResult,
 } from 'src/common/interfaces/pagination.interface';
+import { EntityManager } from 'typeorm';
+import { Payment } from './entities/payment.entity';
 
 @Injectable()
 export class PaymentsService {
@@ -74,7 +76,8 @@ export class PaymentsService {
     transactionId: string,
   ): Promise<PaymentSerializer> {
     const paymentEntity = await this.paymentsRepository.findRawById(id);
-    if (!paymentEntity || !paymentEntity.isActive) { // <<< Verificación añadida
+    if (!paymentEntity || !paymentEntity.isActive) {
+      // <<< Verificación añadida
       throw new NotFoundException(createNotFoundResponse('Pago'));
     }
 
@@ -87,7 +90,8 @@ export class PaymentsService {
           transactionId: paymentEntity.transactionId,
         },
       );
-      if (!updatedPayment) // No debería pasar si findRawById encontró algo activo y se actualizó
+      if (!updatedPayment)
+        // No debería pasar si findRawById encontró algo activo y se actualizó
         throw new NotFoundException(
           createNotFoundResponse('Pago al actualizar'),
         );
@@ -104,7 +108,8 @@ export class PaymentsService {
 
   async cancelPayment(id: string): Promise<PaymentSerializer> {
     const paymentEntity = await this.paymentsRepository.findRawById(id);
-    if (!paymentEntity || !paymentEntity.isActive) { // <<< Verificación añadida
+    if (!paymentEntity || !paymentEntity.isActive) {
+      // <<< Verificación añadida
       throw new NotFoundException(createNotFoundResponse('Pago'));
     }
     try {
@@ -130,7 +135,8 @@ export class PaymentsService {
 
   async failPayment(id: string): Promise<PaymentSerializer> {
     const paymentEntity = await this.paymentsRepository.findRawById(id);
-    if (!paymentEntity || !paymentEntity.isActive) { // <<< Verificación añadida
+    if (!paymentEntity || !paymentEntity.isActive) {
+      // <<< Verificación añadida
       throw new NotFoundException(createNotFoundResponse('Pago'));
     }
     try {
@@ -156,7 +162,8 @@ export class PaymentsService {
 
   async refundPayment(id: string): Promise<PaymentSerializer> {
     const paymentEntity = await this.paymentsRepository.findRawById(id);
-    if (!paymentEntity || !paymentEntity.isActive) { // <<< Verificación añadida
+    if (!paymentEntity || !paymentEntity.isActive) {
+      // <<< Verificación añadida
       throw new NotFoundException(createNotFoundResponse('Pago'));
     }
 
@@ -190,7 +197,8 @@ export class PaymentsService {
     id: string,
   ): Promise<{ id: string; amount: number; status: string; date: Date }> {
     const paymentEntity = await this.paymentsRepository.findRawById(id);
-    if (!paymentEntity || !paymentEntity.isActive) { // <<< Verificación añadida
+    if (!paymentEntity || !paymentEntity.isActive) {
+      // <<< Verificación añadida
       throw new NotFoundException(createNotFoundResponse('Pago'));
     }
     return paymentEntity.getReceipt();
@@ -218,5 +226,108 @@ export class PaymentsService {
       throw new NotFoundException(createNotFoundResponse('Pago'));
     }
     this.logger.log(`Pago eliminado (lógicamente): ${id}`);
+  }
+
+  // --- Métodos Internos para Transacciones ---
+
+  async initiatePaymentInternal(
+    createPaymentDto: CreatePaymentDto,
+    manager: EntityManager,
+  ): Promise<Payment> {
+    const paymentRepository = manager.getRepository(Payment);
+
+    const paymentData = {
+      ...createPaymentDto,
+      status: createPaymentDto.status || PaymentStatusEnum.PENDING,
+      isActive: true,
+    };
+    const payment = paymentRepository.create(paymentData);
+    const savedPayment = await paymentRepository.save(payment);
+    this.logger.log(`Pago (interno) iniciado: ${savedPayment.id}`);
+    return savedPayment;
+  }
+
+  async confirmPaymentInternal(
+    paymentId: string,
+    transactionId: string,
+    manager: EntityManager,
+  ): Promise<Payment> {
+    const paymentRepository = manager.getRepository(Payment);
+
+    const payment = await paymentRepository.findOneBy({
+      id: paymentId,
+      isActive: true,
+    });
+    if (!payment) {
+      throw new NotFoundException(createNotFoundResponse('Pago (interno)'));
+    }
+    try {
+      payment.confirm(transactionId);
+      const updatedPayment = await paymentRepository.save(payment);
+      this.logger.log(
+        `Pago (interno) confirmado: ${paymentId}, Transacción: ${transactionId}`,
+      );
+      return updatedPayment;
+    } catch (error) {
+      this.logger.error(
+        `Error al confirmar el pago (interno) ${paymentId}: ${error.message}`,
+        error.stack,
+      );
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async cancelPaymentInternal(
+    paymentId: string,
+    manager: EntityManager,
+  ): Promise<Payment> {
+    const paymentRepository = manager.getRepository(Payment);
+
+    const payment = await paymentRepository.findOneBy({
+      id: paymentId,
+      isActive: true,
+    });
+    if (!payment) {
+      throw new NotFoundException(createNotFoundResponse('Pago (interno)'));
+    }
+    try {
+      payment.cancel();
+      const updatedPayment = await paymentRepository.save(payment);
+      this.logger.log(`Pago (interno) cancelado: ${paymentId}`);
+      return updatedPayment;
+    } catch (error) {
+      this.logger.error(
+        `Error al cancelar el pago (interno) ${paymentId}: ${error.message}`,
+        error.stack,
+      );
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async refundPaymentInternal(
+    paymentId: string,
+    manager: EntityManager,
+  ): Promise<Payment> {
+    const paymentRepository = manager.getRepository(Payment);
+
+    const payment = await paymentRepository.findOneBy({
+      id: paymentId,
+      isActive: true,
+    });
+    if (!payment) {
+      throw new NotFoundException(createNotFoundResponse('Pago (interno)'));
+    }
+    try {
+      payment.refund();
+      const updatedPayment = await paymentRepository.save(payment);
+      this.logger.log(`Pago (interno) reembolsado: ${paymentId}`);
+      return updatedPayment;
+    } catch (error) {
+      this.logger.error(
+        `Error al reembolsar el pago (interno) ${paymentId}: ${error.message}`,
+        error.stack,
+      );
+      throw new BadRequestException(error.message);
+    }
   }
 }
