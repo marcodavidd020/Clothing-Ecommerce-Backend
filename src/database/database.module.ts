@@ -14,6 +14,7 @@ import { CartsSeederModule } from './seeders/carts/seeder.module';
 import { PaymentsSeederModule } from './seeders/payments/seeder.module';
 import { CouponsSeederModule } from './seeders/coupons/seeder.module';
 import { UserCouponsSeederModule } from './seeders/user-coupons/seeder.module';
+import { OrdersSeederModule } from './seeders/orders/seeder.module';
 
 /**
  * Módulo de base de datos
@@ -52,6 +53,7 @@ import { UserCouponsSeederModule } from './seeders/user-coupons/seeder.module';
     PaymentsSeederModule,
     CouponsSeederModule,
     UserCouponsSeederModule,
+    OrdersSeederModule,
   ],
   exports: [
     UsersSeederModule,
@@ -66,6 +68,7 @@ import { UserCouponsSeederModule } from './seeders/user-coupons/seeder.module';
     PaymentsSeederModule,
     CouponsSeederModule,
     UserCouponsSeederModule,
+    OrdersSeederModule,
   ],
 })
 export class DatabaseModule {}
