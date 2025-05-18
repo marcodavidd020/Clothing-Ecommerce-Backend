@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Role } from '../../../models/roles/entities/role.entity';
+import { Seeder } from '../seeder.interface';
 
 @Injectable()
-export class RolesSeeder {
+export class RolesSeeder implements Seeder {
   constructor(
     @InjectRepository(Role)
     private readonly rolesRepository: Repository<Role>,
   ) {}
 
-  async seed(): Promise<void> {
+  async run(dataSource: DataSource): Promise<void> {
     // Comprobar si ya existen roles
     const count = await this.rolesRepository.count();
     if (count > 0) {

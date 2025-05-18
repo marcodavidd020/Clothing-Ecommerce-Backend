@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { OrdersSeederService } from './orders.seeder';
+import { OrdersSeederService } from './orders.seeder.service';
 import { Order } from '../../../models/orders/entities/order.entity';
 import { OrderItem } from '../../../models/orders/entities/order-item.entity';
 import { User } from '../../../models/users/entities/user.entity';
@@ -28,4 +28,4 @@ import { UserCoupon } from '../../../models/user-coupons/entities/user-coupon.en
   providers: [OrdersSeederService],
   exports: [OrdersSeederService],
 })
-export class OrdersSeederModule {} 
+export class OrdersSeederModule {}

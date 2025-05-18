@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Permission as PermissionEntity } from '../../../models/permissions/entities/permission.entity';
 import { PERMISSIONS_LIST } from '../../../common/constants/permissions.enum';
+import { Seeder } from '../seeder.interface';
 
 @Injectable()
-export class PermissionsSeeder {
+export class PermissionsSeeder implements Seeder {
   constructor(
     @InjectRepository(PermissionEntity)
     private readonly permissionsRepository: Repository<PermissionEntity>,
   ) {}
 
-  async seed(): Promise<void> {
+  async run(dataSource: DataSource): Promise<void> {
     // Comprobar si ya existen permisos
     const count = await this.permissionsRepository.count();
     if (count > 0) {
@@ -27,7 +28,7 @@ export class PermissionsSeeder {
       });
       await this.permissionsRepository.save(permission);
     }
-    
+
     console.log(`${PERMISSIONS_LIST.length} permisos creados correctamente`);
   }
 }

@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TreeRepository } from 'typeorm';
+import { DataSource, TreeRepository } from 'typeorm';
 import { Category } from '../../../models/categories/entities/category.entity';
 import { categoryFactory } from '../../factories/categories/factory';
+import { Seeder } from '../seeder.interface';
 
 @Injectable()
-export class CategoriesSeederService {
+export class CategoriesSeederService implements Seeder {
   private readonly logger = new Logger(CategoriesSeederService.name);
 
   constructor(
@@ -13,7 +14,7 @@ export class CategoriesSeederService {
     private readonly categoryRepository: TreeRepository<Category>,
   ) {}
 
-  async seed(): Promise<void> {
+  async run(dataSource: DataSource): Promise<void> {
     this.logger.log('Iniciando siembra de categorías...');
     try {
       const count = await this.categoryRepository.count();

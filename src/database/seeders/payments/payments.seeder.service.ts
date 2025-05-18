@@ -1,13 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Payment } from '../../../models/payments/entities/payment.entity';
 import { PaymentFactory } from '../../factories/payments/factory';
-// Import User entity si vas a asociar pagos a usuarios existentes
-// import { User } from '../../../models/users/entities/user.entity';
+import { Seeder } from '../seeder.interface';
 
 @Injectable()
-export class PaymentsSeederService {
+export class PaymentsSeederService implements Seeder {
   private readonly logger = new Logger(PaymentsSeederService.name);
 
   constructor(
@@ -17,7 +16,7 @@ export class PaymentsSeederService {
     // private readonly usersRepository: Repository<User>,
   ) {}
 
-  async seed(): Promise<void> {
+  async run(dataSource: DataSource): Promise<void> {
     const numberOfPaymentsToCreate = 10; // O el número que desees
 
     const existingPaymentsCount = await this.paymentsRepository.count();

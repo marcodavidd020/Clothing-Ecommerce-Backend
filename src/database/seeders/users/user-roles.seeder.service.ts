@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { UserRole } from '../../../models/roles/entities/user-role.entity';
 import { User } from '../../../models/users/entities/user.entity';
 import { Role } from '../../../models/roles/entities/role.entity';
 import { Not } from 'typeorm';
+import { Seeder } from '../seeder.interface';
 
 @Injectable()
-export class UserRolesSeeder {
+export class UserRolesSeeder implements Seeder {
   constructor(
     @InjectRepository(UserRole)
     private readonly userRoleRepository: Repository<UserRole>,
@@ -17,7 +18,7 @@ export class UserRolesSeeder {
     private readonly roleRepository: Repository<Role>,
   ) {}
 
-  async seed(): Promise<void> {
+  async run(dataSource: DataSource): Promise<void> {
     // Comprobar si ya existen asignaciones
     const count = await this.userRoleRepository.count();
     if (count > 0) {
