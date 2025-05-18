@@ -40,6 +40,9 @@ export class Payment {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   amount: number;
 
+  @Column({ default: true })
+  isActive: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -53,10 +56,11 @@ export class Payment {
    */
   initiate(): void {
     if (this.status !== PaymentStatusEnum.PENDING) {
-      throw new Error('Solo se pueden iniciar pagos en estado PENDIENTE.');
+      throw new Error('Solo se puede iniciar un pago que está en estado PENDIENTE.');
     }
-    this.status = PaymentStatusEnum.PROCESSING;
-    // Lógica adicional podría ir aquí si es puramente de estado de la entidad.
+    // Lógica adicional para iniciar el pago si es necesario
+    // Por ejemplo, cambiar el estado a PROCESANDO si fuera un paso intermedio
+    // this.status = PaymentStatusEnum.PROCESSING;
   }
 
   /**
@@ -64,13 +68,13 @@ export class Payment {
    * @param transactionId El ID de la transacción del proveedor.
    */
   confirm(transactionId: string): void {
-    if (
-      this.status !== PaymentStatusEnum.PROCESSING &&
-      this.status !== PaymentStatusEnum.PENDING
-    ) {
+    if (this.status !== PaymentStatusEnum.PENDING && this.status !== PaymentStatusEnum.PROCESSING) {
       throw new Error(
-        'Solo se pueden confirmar pagos en estado PROCESANDO o PENDIENTE.',
+        'Solo se puede confirmar un pago que está en estado PENDIENTE o PROCESANDO.',
       );
+    }
+    if (!transactionId) {
+      throw new Error('Se requiere un ID de transacción para confirmar el pago.');
     }
     this.status = PaymentStatusEnum.PAID;
     this.transactionId = transactionId;
@@ -82,10 +86,11 @@ export class Payment {
   cancel(): void {
     if (
       this.status === PaymentStatusEnum.PAID ||
-      this.status === PaymentStatusEnum.REFUNDED
+      this.status === PaymentStatusEnum.REFUNDED ||
+      this.status === PaymentStatusEnum.CANCELLED
     ) {
       throw new Error(
-        'No se puede cancelar un pago que ya fue PAGADO o REEMBOLSADO.',
+        `No se puede cancelar un pago en estado ${this.status}.`,
       );
     }
     this.status = PaymentStatusEnum.CANCELLED;
@@ -97,11 +102,10 @@ export class Payment {
   fail(): void {
     if (
       this.status === PaymentStatusEnum.PAID ||
-      this.status === PaymentStatusEnum.REFUNDED
+      this.status === PaymentStatusEnum.REFUNDED ||
+      this.status === PaymentStatusEnum.FAILED
     ) {
-      throw new Error(
-        'No se puede marcar como fallido un pago que ya fue PAGADO o REEMBOLSADO.',
-      );
+      throw new Error(`No se puede marcar como fallido un pago en estado ${this.status}.`);
     }
     this.status = PaymentStatusEnum.FAILED;
   }
@@ -111,11 +115,12 @@ export class Payment {
    */
   refund(): void {
     if (this.status !== PaymentStatusEnum.PAID) {
-      throw new Error('Solo se pueden reembolsar pagos en estado PAGADO.');
+      throw new Error(
+        'Solo se puede reembolsar un pago que está en estado PAGADO.',
+      );
     }
     this.status = PaymentStatusEnum.REFUNDED;
-    // Lógica adicional como registrar el monto reembolsado podría ir aquí
-    // o en una entidad separada de Reembolso.
+    // Lógica adicional para el reembolso (ej. interactuar con el proveedor)
   }
 
   /**
@@ -133,8 +138,15 @@ export class Payment {
     return {
       id: this.id,
       amount: this.amount,
-      status: this.status,
-      date: this.createdAt,
+      status: this.status.toString(),
+      date: this.updatedAt, // O createdAt, según la lógica de negocio
     };
+  }
+
+  softDelete(): void {
+    if (!this.isActive) {
+      throw new Error('El pago ya ha sido eliminado.');
+    }
+    this.isActive = false;
   }
 }

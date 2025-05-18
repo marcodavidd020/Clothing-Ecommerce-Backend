@@ -28,12 +28,12 @@ export class PaymentsService {
   async findAllPaginated(
     options: IPaginationOptions,
   ): Promise<IPaginatedResult<PaymentSerializer>> {
-    // Aquí podrías añadir filtros o relaciones si es necesario
+    // El repositorio ya filtra por isActive: true en su método paginate
     return this.paymentsRepository.paginate(options);
   }
 
   async findById(id: string): Promise<PaymentSerializer> {
-    const payment = await this.paymentsRepository.findById(id);
+    const payment = await this.paymentsRepository.findById(id); // Ya filtra por isActive: true
     if (!payment) {
       throw new NotFoundException(createNotFoundResponse('Pago'));
     }
@@ -43,6 +43,7 @@ export class PaymentsService {
   async findByTransactionId(
     transactionId: string,
   ): Promise<PaymentSerializer | null> {
+    // Ya filtra por isActive: true
     return this.paymentsRepository.findByTransactionId(transactionId);
   }
 
@@ -50,8 +51,7 @@ export class PaymentsService {
     createPaymentDto: CreatePaymentDto,
   ): Promise<PaymentSerializer> {
     try {
-      // Lógica de comunicación con el proveedor de pago iría aquí
-      // Por ahora, solo creamos el registro en la BD
+      // El repositorio se encarga de establecer isActive: true
       const payment = await this.paymentsRepository.createPayment({
         ...createPaymentDto,
         status: createPaymentDto.status || PaymentStatusEnum.PENDING,
@@ -74,7 +74,7 @@ export class PaymentsService {
     transactionId: string,
   ): Promise<PaymentSerializer> {
     const paymentEntity = await this.paymentsRepository.findRawById(id);
-    if (!paymentEntity) {
+    if (!paymentEntity || !paymentEntity.isActive) { // <<< Verificación añadida
       throw new NotFoundException(createNotFoundResponse('Pago'));
     }
 
@@ -87,7 +87,7 @@ export class PaymentsService {
           transactionId: paymentEntity.transactionId,
         },
       );
-      if (!updatedPayment)
+      if (!updatedPayment) // No debería pasar si findRawById encontró algo activo y se actualizó
         throw new NotFoundException(
           createNotFoundResponse('Pago al actualizar'),
         );
@@ -104,7 +104,7 @@ export class PaymentsService {
 
   async cancelPayment(id: string): Promise<PaymentSerializer> {
     const paymentEntity = await this.paymentsRepository.findRawById(id);
-    if (!paymentEntity) {
+    if (!paymentEntity || !paymentEntity.isActive) { // <<< Verificación añadida
       throw new NotFoundException(createNotFoundResponse('Pago'));
     }
     try {
@@ -130,7 +130,7 @@ export class PaymentsService {
 
   async failPayment(id: string): Promise<PaymentSerializer> {
     const paymentEntity = await this.paymentsRepository.findRawById(id);
-    if (!paymentEntity) {
+    if (!paymentEntity || !paymentEntity.isActive) { // <<< Verificación añadida
       throw new NotFoundException(createNotFoundResponse('Pago'));
     }
     try {
@@ -156,11 +156,10 @@ export class PaymentsService {
 
   async refundPayment(id: string): Promise<PaymentSerializer> {
     const paymentEntity = await this.paymentsRepository.findRawById(id);
-    if (!paymentEntity) {
+    if (!paymentEntity || !paymentEntity.isActive) { // <<< Verificación añadida
       throw new NotFoundException(createNotFoundResponse('Pago'));
     }
 
-    // Lógica de comunicación con el proveedor de pago para procesar el reembolso iría aquí
     try {
       paymentEntity.refund();
       const updatedPayment = await this.paymentsRepository.updatePayment(
@@ -183,7 +182,7 @@ export class PaymentsService {
   }
 
   async isPaymentSuccessful(id: string): Promise<boolean> {
-    const payment = await this.findById(id);
+    const payment = await this.findById(id); // findById ya lanza NotFound si no está activo
     return payment.status === PaymentStatusEnum.PAID;
   }
 
@@ -191,10 +190,9 @@ export class PaymentsService {
     id: string,
   ): Promise<{ id: string; amount: number; status: string; date: Date }> {
     const paymentEntity = await this.paymentsRepository.findRawById(id);
-    if (!paymentEntity) {
+    if (!paymentEntity || !paymentEntity.isActive) { // <<< Verificación añadida
       throw new NotFoundException(createNotFoundResponse('Pago'));
     }
-    // Aquí se podría formatear más la información o incluir más detalles
     return paymentEntity.getReceipt();
   }
 
@@ -202,6 +200,7 @@ export class PaymentsService {
     id: string,
     updatePaymentDto: UpdatePaymentDto,
   ): Promise<PaymentSerializer> {
+    // El método updatePayment del repositorio ya verifica si está activo antes de actualizar
     const payment = await this.paymentsRepository.updatePayment(
       id,
       updatePaymentDto,
@@ -214,10 +213,10 @@ export class PaymentsService {
   }
 
   async delete(id: string): Promise<void> {
-    const success = await this.paymentsRepository.deletePayment(id);
+    const success = await this.paymentsRepository.deletePayment(id); // deletePayment ahora hace soft delete
     if (!success) {
       throw new NotFoundException(createNotFoundResponse('Pago'));
     }
-    this.logger.log(`Pago eliminado: ${id}`);
+    this.logger.log(`Pago eliminado (lógicamente): ${id}`);
   }
 }

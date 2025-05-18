@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { DataSource, FindOptionsWhere } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { Payment } from '../entities/payment.entity';
 import { ModelRepository } from '../../common/repositories/model.repository';
@@ -8,6 +8,7 @@ import {
   IPaymentCreate,
   IPaymentUpdate,
 } from '../interfaces/payment.interface';
+import { IPaginationOptions, IPaginatedResult } from 'src/common/interfaces/pagination.interface';
 
 @Injectable()
 export class PaymentsRepository extends ModelRepository<
@@ -22,27 +23,55 @@ export class PaymentsRepository extends ModelRepository<
   }
 
   async findById(id: string): Promise<PaymentSerializer | null> {
-    return this.get(id);
+    const payment = await this.repository.findOne({
+      where: { id, isActive: true },
+    });
+    return payment ? this.transform(payment) : null;
   }
 
   async findByTransactionId(
     transactionId: string,
   ): Promise<PaymentSerializer | null> {
-    return this.getBy({ transactionId });
+    const payment = await this.repository.findOne({
+      where: { transactionId, isActive: true },
+    });
+    return payment ? this.transform(payment) : null;
   }
 
   async createPayment(data: IPaymentCreate): Promise<PaymentSerializer> {
-    return this.createEntity(data);
+    const paymentToCreate = this.repository.create({ ...data, isActive: true });
+    const newPayment = await this.repository.save(paymentToCreate);
+    return this.transform(newPayment);
   }
 
   async updatePayment(
     id: string,
     data: IPaymentUpdate,
   ): Promise<PaymentSerializer | null> {
-    return this.updateEntity(id, data);
+    const payment = await this.repository.findOneBy({ id, isActive: true });
+    if (!payment) {
+      return null;
+    }
+    await this.repository.update(id, data);
+    const updatedPayment = await this.repository.findOneBy({ id });
+    return updatedPayment ? this.transform(updatedPayment) : null;
   }
 
   async deletePayment(id: string): Promise<boolean> {
-    return this.deleteEntity(id);
+    const payment = await this.repository.findOneBy({ id, isActive: true });
+    if (!payment) {
+      return false;
+    }
+    const result = await this.repository.update(id, { isActive: false });
+    return result.affected !== undefined && result.affected > 0;
+  }
+
+  async paginate(
+    options: IPaginationOptions = {},
+    relations: string[] = [],
+    customWhere?: FindOptionsWhere<Payment>,
+  ): Promise<IPaginatedResult<PaymentSerializer>> {
+    const defaultWhere: FindOptionsWhere<Payment> = { isActive: true, ...customWhere };
+    return super.paginate(options, relations, defaultWhere);
   }
 }

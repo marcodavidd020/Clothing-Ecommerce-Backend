@@ -40,14 +40,14 @@ import {
   paginatedResponseSchema,
   paginationQueryParams,
 } from '../../common/schemas/pagination.schema';
-// import { PermissionsGuard } from 'src/common/guards/permissions.guard'; // Descomentar si se usan permisos específicos
-// import { RequirePermissions } from 'src/common/decorators/metadata/permissions.metadata'; // Descomentar para permisos
-// import { PaymentPermissionsEnum } from './constants/payment-permissions.enum'; // Crear este enum si se necesita
+import { PermissionsGuard } from 'src/common/guards/permissions.guard'; // Descomentar si se usan permisos específicos
+import { RequirePermissions } from 'src/common/decorators/metadata/permissions.metadata'; // Descomentar para permisos
+import { PaymentPermissionsEnum } from './constants/payment-permissions'; // Crear este enum si se necesita
 
 @ApiTags('Pagos')
 @ApiBearerAuth('JWT-auth') // Asumiendo autenticación global
 @Controller('payments')
-@UseGuards(JwtAuthGuard) // Descomentar PermissionsGuard si se implementan permisos
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
@@ -60,7 +60,7 @@ export class PaymentsController {
     description: 'Lista de pagos paginados',
     schema: paginatedResponseSchema('#/components/schemas/PaymentSerializer'),
   })
-  // @RequirePermissions(PaymentPermissionsEnum.VIEW_ALL) // Ejemplo de permiso
+  @RequirePermissions(PaymentPermissionsEnum.VIEW) // Ejemplo de permiso
   @Get()
   async findAllPaginated(
     @Query() paginationDto: PaginationDto,
@@ -81,7 +81,7 @@ export class PaymentsController {
     type: PaymentSerializer,
   })
   @ApiResponse({ status: 404, description: 'Pago no encontrado' })
-  // @RequirePermissions(PaymentPermissionsEnum.VIEW) // Ejemplo de permiso
+  @RequirePermissions(PaymentPermissionsEnum.VIEW) // Ejemplo de permiso
   @Get(':id')
   async findById(
     @Param('id', ParseUUIDPipe) id: string,
@@ -98,7 +98,7 @@ export class PaymentsController {
     type: PaymentSerializer,
   })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
-  // @RequirePermissions(PaymentPermissionsEnum.CREATE) // Ejemplo de permiso
+  @RequirePermissions(PaymentPermissionsEnum.CREATE) // Ejemplo de permiso
   @Post()
   async initiatePayment(
     @Body() createPaymentDto: CreatePaymentDto,
@@ -127,7 +127,7 @@ export class PaymentsController {
     type: PaymentSerializer,
   })
   @ApiResponse({ status: 404, description: 'Pago no encontrado' })
-  // @RequirePermissions(PaymentPermissionsEnum.UPDATE) // Ejemplo de permiso
+  @RequirePermissions(PaymentPermissionsEnum.UPDATE) // Ejemplo de permiso
   @Patch(':id/confirm')
   async confirmPayment(
     @Param('id', ParseUUIDPipe) id: string,
@@ -147,7 +147,7 @@ export class PaymentsController {
     description: 'Pago cancelado',
     type: PaymentSerializer,
   })
-  // @RequirePermissions(PaymentPermissionsEnum.UPDATE) // Ejemplo de permiso
+  @RequirePermissions(PaymentPermissionsEnum.UPDATE) // Ejemplo de permiso
   @Patch(':id/cancel')
   async cancelPayment(
     @Param('id', ParseUUIDPipe) id: string,
@@ -167,7 +167,7 @@ export class PaymentsController {
     description: 'Pago marcado como fallido',
     type: PaymentSerializer,
   })
-  // @RequirePermissions(PaymentPermissionsEnum.UPDATE) // Ejemplo de permiso
+  @RequirePermissions(PaymentPermissionsEnum.UPDATE) // Ejemplo de permiso
   @Patch(':id/fail')
   async failPayment(
     @Param('id', ParseUUIDPipe) id: string,
@@ -191,7 +191,7 @@ export class PaymentsController {
     description: 'Pago reembolsado',
     type: PaymentSerializer,
   })
-  // @RequirePermissions(PaymentPermissionsEnum.REFUND) // Ejemplo de permiso
+  @RequirePermissions(PaymentPermissionsEnum.UPDATE) // Ejemplo de permiso
   @Post(':id/refund')
   async refundPayment(
     @Param('id', ParseUUIDPipe) id: string,
@@ -207,7 +207,7 @@ export class PaymentsController {
     description: 'Recibo del pago',
     schema: { type: 'object' }, // Ajustar schema según la estructura del recibo
   })
-  // @RequirePermissions(PaymentPermissionsEnum.VIEW) // Ejemplo de permiso
+  @RequirePermissions(PaymentPermissionsEnum.VIEW) // Ejemplo de permiso
   @Get(':id/receipt')
   async getPaymentReceipt(
     @Param('id', ParseUUIDPipe) id: string,
@@ -229,7 +229,7 @@ export class PaymentsController {
     type: PaymentSerializer,
   })
   @ApiResponse({ status: 404, description: 'Pago no encontrado' })
-  // @RequirePermissions(PaymentPermissionsEnum.UPDATE) // Ejemplo de permiso
+  @RequirePermissions(PaymentPermissionsEnum.UPDATE) // Ejemplo de permiso
   @Put(':id')
   async update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -243,7 +243,7 @@ export class PaymentsController {
   @ApiParam({ name: 'id', description: 'ID del Pago a eliminar', type: String })
   @ApiResponse({ status: 204, description: 'Pago eliminado' })
   @ApiResponse({ status: 404, description: 'Pago no encontrado' })
-  // @RequirePermissions(PaymentPermissionsEnum.DELETE) // Ejemplo de permiso
+  @RequirePermissions(PaymentPermissionsEnum.DELETE) // Ejemplo de permiso
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
