@@ -36,5 +36,13 @@ export { OrderSerializer } from './orders/serializers/order.serializer';
 export { OrderItemSerializer } from './orders/serializers/order-item.serializer';
 // Fin Orders Exports
 
+// Reviews Exports
+export { Review } from './reviews/entities/review.entity';
+export { ReviewsRepository } from './reviews/repositories/reviews.repository';
+export { ReviewsModule } from './reviews/reviews.module';
+export { ReviewsService } from './reviews/reviews.service';
+export { ReviewSerializer } from './reviews/serializers/review.serializer';
+// Fin Reviews Exports
+
 // Models
 export { ModelsModule } from './models.module';

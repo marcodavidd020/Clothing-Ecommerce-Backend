@@ -10,6 +10,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { CouponsModule } from './coupons/coupons.module';
 import { UserCouponsModule } from './user-coupons/user-coupons.module';
 import { OrdersModule } from './orders/orders.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { OrdersModule } from './orders/orders.module';
     CouponsModule,
     UserCouponsModule,
     OrdersModule,
+    ReviewsModule,
   ],
   exports: [
     UsersModule,
@@ -37,6 +39,7 @@ import { OrdersModule } from './orders/orders.module';
     CouponsModule,
     UserCouponsModule,
     OrdersModule,
+    ReviewsModule,
   ],
 })
 export class ModelsModule {}

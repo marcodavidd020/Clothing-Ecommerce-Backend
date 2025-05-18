@@ -90,4 +90,13 @@ export class OrdersRepository extends ModelRepository<Order, OrderSerializer> {
   ): Promise<IPaginatedResult<OrderSerializer>> {
     return this.paginate(options, this.getDefaultRelations(), where);
   }
+
+  // Nuevo método para buscar un OrderItem por su ID
+  async findOrderItemById(orderItemId: string): Promise<OrderItem | null> {
+    const orderItemRepository = this.manager.getRepository(OrderItem);
+    return orderItemRepository.findOne({
+      where: { id: orderItemId },
+      relations: ['productVariant', 'productVariant.product'], // Cargar relaciones necesarias para la reseña
+    });
+  }
 }
