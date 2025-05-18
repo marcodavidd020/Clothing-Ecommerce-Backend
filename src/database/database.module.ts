@@ -12,6 +12,8 @@ import { CategoriesSeederModule } from './seeders/categories/seeder.module';
 import { ProductsSeederModule } from './seeders/products/products.seeder.module';
 import { CartsSeederModule } from './seeders/carts/seeder.module';
 import { PaymentsSeederModule } from './seeders/payments/seeder.module';
+import { CouponsSeederModule } from './seeders/coupons/seeder.module';
+import { UserCouponsSeederModule } from './seeders/user-coupons/seeder.module';
 
 /**
  * Módulo de base de datos
@@ -48,6 +50,8 @@ import { PaymentsSeederModule } from './seeders/payments/seeder.module';
     ProductsSeederModule,
     CartsSeederModule,
     PaymentsSeederModule,
+    CouponsSeederModule,
+    UserCouponsSeederModule,
   ],
   exports: [
     UsersSeederModule,
@@ -60,6 +64,8 @@ import { PaymentsSeederModule } from './seeders/payments/seeder.module';
     ProductsSeederModule,
     CartsSeederModule,
     PaymentsSeederModule,
+    CouponsSeederModule,
+    UserCouponsSeederModule,
   ],
 })
 export class DatabaseModule {}
