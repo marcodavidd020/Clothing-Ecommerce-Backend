@@ -1,6 +1,8 @@
 import { CartPermissions } from 'src/models/carts/constants/cart-permissions';
+import { CouponPermissions } from 'src/models/coupons/constants/coupon-permissions';
 import { PaymentPermissions } from 'src/models/payments/constants/payment-permissions';
 import { ProductPermissions } from 'src/models/products/constants/product-permissions.constant';
+import { UserCouponPermissions } from 'src/models/user-coupons/constants/user-coupon-permissions';
 
 /**
  * Interfaz para definir permisos con descripción
@@ -237,6 +239,8 @@ export const ALL_PERMISSIONS = {
   PRODUCT: ProductPermissions,
   CART: CartPermissions,
   PAYMENT: PaymentPermissions,
+  COUPON: CouponPermissions,
+  USER_COUPON: UserCouponPermissions,
 };
 
 /**
@@ -252,4 +256,6 @@ export const PERMISSIONS_LIST: Permission[] = [
   ...Object.values(ProductPermissions),
   ...Object.values(CartPermissions),
   ...Object.values(PaymentPermissions),
+  ...Object.values(CouponPermissions),
+  ...Object.values(UserCouponPermissions),
 ];

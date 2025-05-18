@@ -7,6 +7,8 @@ import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { CartsModule } from './carts/carts.module';
 import { PaymentsModule } from './payments/payments.module';
+import { CouponsModule } from './coupons/coupons.module';
+import { UserCouponsModule } from './user-coupons/user-coupons.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { PaymentsModule } from './payments/payments.module';
     ProductsModule,
     CartsModule,
     PaymentsModule,
+    CouponsModule,
+    UserCouponsModule,
   ],
   exports: [
     UsersModule,
@@ -28,6 +32,8 @@ import { PaymentsModule } from './payments/payments.module';
     ProductsModule,
     CartsModule,
     PaymentsModule,
+    CouponsModule,
+    UserCouponsModule,
   ],
 })
 export class ModelsModule {}
