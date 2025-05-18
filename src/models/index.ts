@@ -18,5 +18,13 @@ export { AddressesService } from './addresses/addresses.service';
 export { UserSerializer } from './users/serializers/user.serializer';
 export { AddressSerializer } from './addresses/serializers/address.serializer';
 
+// Payments Exports
+export { Payment } from './payments/entities/payment.entity';
+export { PaymentsRepository } from './payments/repositories/payments.repository';
+export { PaymentsModule } from './payments/payments.module';
+export { PaymentsService } from './payments/payments.service';
+export { PaymentSerializer } from './payments/serializers/payment.serializer';
+// Fin Payments Exports
+
 // Models
 export { ModelsModule } from './models.module';

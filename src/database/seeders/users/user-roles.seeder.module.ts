@@ -10,4 +10,4 @@ import { Role } from '../../../models/roles/entities/role.entity';
   providers: [UserRolesSeeder],
   exports: [UserRolesSeeder],
 })
-export class UserRolesSeederModule {} 
+export class UserRolesSeederModule {}

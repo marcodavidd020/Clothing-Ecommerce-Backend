@@ -10,6 +10,7 @@ import { Logger } from '@nestjs/common';
 import { CategoriesSeederService } from './seeders/categories/categories.seeder';
 import { ProductsSeederService } from './seeders/products/products.seeder';
 import { CartsSeederService } from './seeders/carts/carts.seeder';
+import { PaymentsSeederService } from './seeders/payments/payments.seeder';
 
 async function bootstrap() {
   const logger = new Logger('Seeder');
@@ -54,6 +55,10 @@ async function bootstrap() {
     logger.log('Ejecutando seeder de carritos...');
     const cartsSeederService = appContext.get(CartsSeederService);
     await cartsSeederService.seed();
+
+    logger.log('Ejecutando seeder de pagos...');
+    const paymentsSeederService = appContext.get(PaymentsSeederService);
+    await paymentsSeederService.seed();
 
     logger.log('Proceso de seed completado exitosamente!');
   } catch (error) {
