@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Address } from '../../../models/addresses/entities/address.entity';
 import { UserRole } from '../../roles/entities/user-role.entity';
+import { Review } from '../../reviews/entities/review.entity';
 
 @Entity('users')
 export class User {
@@ -43,6 +44,9 @@ export class User {
 
   @OneToMany(() => UserRole, (userRole) => userRole.user)
   userRoles: UserRole[];
+
+  @OneToMany(() => Review, (review) => review.user)
+  reviews: Review[];
 
   @CreateDateColumn()
   createdAt: Date;

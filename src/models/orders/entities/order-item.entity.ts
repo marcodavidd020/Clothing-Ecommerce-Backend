@@ -6,9 +6,11 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { Order } from './order.entity';
 import { ProductVariant } from '../../products/entities/product-variant.entity';
+import { Review } from '../../reviews/entities/review.entity';
 
 @Entity('order_items')
 export class OrderItem {
@@ -38,6 +40,9 @@ export class OrderItem {
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number; // Precio unitario del producto en el momento de la compra
+
+  @OneToMany(() => Review, (review) => review.orderItem)
+  reviews: Review[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   createdAt: Date;

@@ -21,7 +21,6 @@ import {
   ApiBody,
   ApiResponse,
   ApiBearerAuth,
-  ApiQuery,
 } from '@nestjs/swagger';
 import { ProductVariantsService } from './product-variants.service';
 import { ProductVariantSerializer } from './serializers/product-variant.serializer';
@@ -34,7 +33,6 @@ import { ProductPermissionsEnum } from './constants/product-permissions.constant
 import { AddVariantStockDto } from './dto/add-variant-stock.dto';
 import { RemoveVariantStockDto } from './dto/remove-variant-stock.dto';
 import { UpdateVariantDetailsDto } from './dto/update-variant-details.dto';
-
 
 @ApiTags('Variantes de Productos')
 @ApiBearerAuth('JWT-auth')
@@ -128,7 +126,11 @@ export class ProductVariantsController {
   @ApiOperation({ summary: 'Añadir stock a una variante' })
   @ApiParam({ name: 'id', description: 'ID de la variante', type: String })
   @ApiBody({ type: AddVariantStockDto })
-  @ApiResponse({ status: 200, description: 'Stock añadido', type: ProductVariantSerializer })
+  @ApiResponse({
+    status: 200,
+    description: 'Stock añadido',
+    type: ProductVariantSerializer,
+  })
   @ApiResponse({ status: 404, description: 'Variante no encontrada' })
   @ApiResponse({ status: 400, description: 'Cantidad inválida' })
   async addStock(
@@ -143,9 +145,16 @@ export class ProductVariantsController {
   @ApiOperation({ summary: 'Remover stock de una variante' })
   @ApiParam({ name: 'id', description: 'ID de la variante', type: String })
   @ApiBody({ type: RemoveVariantStockDto })
-  @ApiResponse({ status: 200, description: 'Stock removido', type: ProductVariantSerializer })
+  @ApiResponse({
+    status: 200,
+    description: 'Stock removido',
+    type: ProductVariantSerializer,
+  })
   @ApiResponse({ status: 404, description: 'Variante no encontrada' })
-  @ApiResponse({ status: 400, description: 'Cantidad inválida o stock resultante negativo' })
+  @ApiResponse({
+    status: 400,
+    description: 'Cantidad inválida o stock resultante negativo',
+  })
   async removeStock(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: RemoveVariantStockDto,
@@ -155,10 +164,16 @@ export class ProductVariantsController {
 
   @Patch(':id/details')
   @RequirePermissions(ProductPermissionsEnum.PRODUCT_VARIANT_UPDATE)
-  @ApiOperation({ summary: 'Actualizar detalles de una variante (color, talla, stock)' })
+  @ApiOperation({
+    summary: 'Actualizar detalles de una variante (color, talla, stock)',
+  })
   @ApiParam({ name: 'id', description: 'ID de la variante', type: String })
   @ApiBody({ type: UpdateVariantDetailsDto })
-  @ApiResponse({ status: 200, description: 'Detalles actualizados', type: ProductVariantSerializer })
+  @ApiResponse({
+    status: 200,
+    description: 'Detalles actualizados',
+    type: ProductVariantSerializer,
+  })
   @ApiResponse({ status: 404, description: 'Variante no encontrada' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   async updateDetails(

@@ -6,7 +6,7 @@ import { Category } from '../../categories/entities/category.entity';
 import { CreateProductDto } from '../dto/create-product.dto';
 import { UpdateProductDto } from '../dto/update-product.dto';
 import { ModelRepository } from '../../common/repositories/model.repository';
-import { plainToInstance } from 'class-transformer';
+import { ProductSerializer } from '../serializers/product.serializer';
 import {
   IPaginatedResult,
   IPaginationOptions,
@@ -17,7 +17,7 @@ import {
 @Injectable()
 export class ProductsRepository extends ModelRepository<
   Product,
-  Product
+  ProductSerializer
 > {
   private readonly logger = new Logger(ProductsRepository.name);
 
@@ -26,7 +26,7 @@ export class ProductsRepository extends ModelRepository<
     @InjectRepository(Category) // Still need Category repository directly for category relation logic in create/update
     private readonly categoryRepository: Repository<Category>,
   ) {
-    super(Product);
+    super(ProductSerializer);
     this.manager = dataSource.manager;
     this.repository = dataSource.getRepository(Product);
   }
@@ -41,7 +41,7 @@ export class ProductsRepository extends ModelRepository<
   async paginate(
     options: IPaginationOptions,
     relationsToLoad: string[] = [],
-  ): Promise<IPaginatedResult<Product>> {
+  ): Promise<IPaginatedResult<ProductSerializer>> {
     const page = options.page || 1;
     const limit = options.limit || 10;
     const skip = (page - 1) * limit;
@@ -68,7 +68,7 @@ export class ProductsRepository extends ModelRepository<
     const totalPages = Math.ceil(totalItems / limit);
 
     return {
-      data: entities,
+      data: this.transformMany(entities),
       pagination: {
         totalItems,
         totalPages,
@@ -94,8 +94,19 @@ export class ProductsRepository extends ModelRepository<
     slug: string,
     relations: string[] = [],
   ): Promise<Product | null> {
-    return this.repository.findOne({
+    const entity = await this.repository.findOne({
       where: { slug, isActive: true },
+      relations,
+    });
+    return entity;
+  }
+
+  async findRawBySlug(
+    slug: string,
+    relations: string[] = [],
+  ): Promise<Product | null> {
+    return this.repository.findOne({
+      where: { slug },
       relations,
     });
   }

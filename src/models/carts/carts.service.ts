@@ -15,10 +15,10 @@ import { Cart } from './entities/cart.entity';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { ProductVariant } from '../products/entities/product-variant.entity'; // Asegurar que está importado para la interfaz local
 
-// Interfaz local para abordar el problema de 'price' en ProductVariant
-interface ProductVariantWithPrice extends ProductVariant {
-  price?: number;
-}
+// Interfaz local para abordar el problema de 'price' en ProductVariant - ELIMINADA
+// interface ProductVariantWithPrice extends ProductVariant {
+//   price?: number;
+// }
 
 @Injectable()
 export class CartsService {
@@ -159,12 +159,19 @@ export class CartsService {
       throw new NotFoundException(`Carrito con ID ${cartId} no encontrado.`);
     }
 
-    const productVariant = (await this.productVariantsRepository.findById(
-      productVariantId,
-    )) as ProductVariantWithPrice;
+    // Usar findRawById para obtener la entidad ProductVariant directamente
+    const productVariant: ProductVariant | null =
+      await this.productVariantsRepository.findRawById(productVariantId);
     if (!productVariant) {
       throw new NotFoundException(
         `Variante de producto con ID ${productVariantId} no encontrada.`,
+      );
+    }
+
+    // Verificar stock (si es necesario aquí, o delegar al repositorio)
+    if (productVariant.stock < quantity) {
+      throw new ConflictException(
+        `Stock insuficiente para la variante ${productVariant.product.name}. Disponible: ${productVariant.stock}`,
       );
     }
 

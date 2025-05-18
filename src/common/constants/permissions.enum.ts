@@ -3,6 +3,7 @@ import { CouponPermissions } from 'src/models/coupons/constants/coupon-permissio
 import { OrderPermissions } from 'src/models/orders/constants/order-permissions';
 import { PaymentPermissions } from 'src/models/payments/constants/payment-permissions';
 import { ProductPermissions } from 'src/models/products/constants/product-permissions.constant';
+import { ReviewPermissions } from 'src/models/reviews/constants/review-permissions';
 import { UserCouponPermissions } from 'src/models/user-coupons/constants/user-coupon-permissions';
 
 /**
@@ -243,6 +244,7 @@ export const ALL_PERMISSIONS = {
   COUPON: CouponPermissions,
   USER_COUPON: UserCouponPermissions,
   ORDER: OrderPermissions,
+  REVIEW: ReviewPermissions,
 };
 
 /**
@@ -261,4 +263,5 @@ export const PERMISSIONS_LIST: Permission[] = [
   ...Object.values(CouponPermissions),
   ...Object.values(UserCouponPermissions),
   ...Object.values(OrderPermissions),
+  ...Object.values(ReviewPermissions),
 ];

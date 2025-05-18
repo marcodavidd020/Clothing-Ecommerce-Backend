@@ -35,4 +35,12 @@ export class UpdateProductDto extends PartialType(CreateProductDto) {
   @ValidateIf((o) => o.categoryIds !== undefined)
   @IsArray()
   categoryIds?: string[];
+
+  @ApiPropertyOptional({
+    description: 'Indica si el producto está activo o no.',
+    example: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }

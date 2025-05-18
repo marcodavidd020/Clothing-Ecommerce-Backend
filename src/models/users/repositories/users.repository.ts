@@ -34,11 +34,11 @@ export class UsersRepository extends ModelRepository<User, UserSerializer> {
    * Buscar usuario activo por id
    */
   async findById(id: string): Promise<UserSerializer | null> {
-    return this.getBy({ id, isActive: true } as any, [
-      'addresses',
-      'userRoles',
-      'userRoles.role',
-    ], false);
+    return this.getBy(
+      { id, isActive: true } as any,
+      ['addresses', 'userRoles', 'userRoles.role'],
+      false,
+    );
   }
 
   /**
@@ -74,10 +74,10 @@ export class UsersRepository extends ModelRepository<User, UserSerializer> {
       '(LOWER(user.firstName) LIKE LOWER(:query) OR ' +
         'LOWER(user.lastName) LIKE LOWER(:query) OR ' +
         'LOWER(user.email) LIKE LOWER(:query) OR ' +
-        "(user.phoneNumber IS NOT NULL AND LOWER(user.phoneNumber) LIKE LOWER(:query)))",
+        '(user.phoneNumber IS NOT NULL AND LOWER(user.phoneNumber) LIKE LOWER(:query)))',
       { query: `%${query}%` },
     );
-    
+
     const page = options.page || 1;
     const limit = options.limit || 10;
     const skip = (page - 1) * limit;
@@ -185,7 +185,9 @@ export class UsersRepository extends ModelRepository<User, UserSerializer> {
       console.log(`Usuario con ID ${id} desactivado.`);
       return true;
     }
-    console.log(`No se pudo desactivar el usuario con ID ${id} o ya estaba desactivado.`);
+    console.log(
+      `No se pudo desactivar el usuario con ID ${id} o ya estaba desactivado.`,
+    );
     return false;
   }
 

@@ -30,44 +30,36 @@ export class ProductVariantsService implements IProductVariantsService {
   async findByProductId(
     productId: string,
   ): Promise<ProductVariantSerializer[]> {
-    const variants = await this.variantsRepository.findByProductId(productId);
-    return variants.map((v) => this.transformToSerializer(v));
+    return this.variantsRepository.findByProductId(productId);
   }
 
   async findById(id: string): Promise<ProductVariantSerializer> {
-    const variantEntity = await this.variantsRepository.findById(id);
-    if (!variantEntity) {
+    const variantSerializer = await this.variantsRepository.findById(id);
+    if (!variantSerializer) {
       throw new NotFoundException(
         createNotFoundResponse('Variante de producto'),
       );
     }
-    return this.transformToSerializer(variantEntity);
+    return variantSerializer;
   }
 
   async create(
     variantData: CreateProductVariantDto & { productId: string },
   ): Promise<ProductVariantSerializer> {
-    const createdEntity = await this.variantsRepository.create(variantData);
-    return this.transformToSerializer(createdEntity);
+    return this.variantsRepository.create(variantData);
   }
 
   async update(
     id: string,
     variantData: UpdateProductVariantDto,
   ): Promise<ProductVariantSerializer> {
-    const variantEntity = await this.variantsRepository.findById(id);
-    if (!variantEntity) {
+    const updatedSerializer = await this.variantsRepository.update(id, variantData);
+    if (!updatedSerializer) {
       throw new NotFoundException(
         createNotFoundResponse('Variante de producto'),
       );
     }
-    const updatedEntity = await this.variantsRepository.update(id, variantData);
-    if (!updatedEntity) {
-      throw new NotFoundException(
-        createNotFoundResponse('Variante de producto'),
-      );
-    }
-    return this.transformToSerializer(updatedEntity);
+    return updatedSerializer;
   }
 
   async delete(id: string): Promise<void> {
@@ -83,7 +75,7 @@ export class ProductVariantsService implements IProductVariantsService {
     variantId: string,
     dto: AddVariantStockDto,
   ): Promise<ProductVariantSerializer> {
-    const variantEntity = await this.variantsRepository.findById(variantId);
+    const variantEntity = await this.variantsRepository.findRawById(variantId);
     if (!variantEntity) {
       throw new NotFoundException(
         createNotFoundResponse('Variante de producto'),
@@ -102,7 +94,7 @@ export class ProductVariantsService implements IProductVariantsService {
     variantId: string,
     dto: RemoveVariantStockDto,
   ): Promise<ProductVariantSerializer> {
-    const variantEntity = await this.variantsRepository.findById(variantId);
+    const variantEntity = await this.variantsRepository.findRawById(variantId);
     if (!variantEntity) {
       throw new NotFoundException(
         createNotFoundResponse('Variante de producto'),
@@ -121,7 +113,7 @@ export class ProductVariantsService implements IProductVariantsService {
     variantId: string,
     dto: UpdateVariantDetailsDto,
   ): Promise<ProductVariantSerializer> {
-    const variantEntity = await this.variantsRepository.findById(variantId);
+    const variantEntity = await this.variantsRepository.findRawById(variantId);
     if (!variantEntity) {
       throw new NotFoundException(
         createNotFoundResponse('Variante de producto'),
