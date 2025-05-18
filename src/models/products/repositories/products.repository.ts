@@ -100,6 +100,13 @@ export class ProductsRepository extends ModelRepository<
     });
   }
 
+  async findEntityById(id: string, relations: string[] = []): Promise<Product | null> {
+    return this.repository.findOne({
+      where: { id, isActive: true }, // O solo { id } si se necesita incluso inactivos
+      relations,
+    });
+  }
+
   async create(data: CreateProductDto): Promise<Product> {
     const productDataWithoutRelations = {
       name: data.name,
