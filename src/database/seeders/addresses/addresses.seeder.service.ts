@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Address } from '../../../models/addresses/entities/address.entity';
 import { User } from '../../../models/users/entities/user.entity';
 import { AddressFactory } from '../../factories/addresses/factory';
+import { Seeder } from '../seeder.interface';
 
 @Injectable()
-export class AddressesSeederService {
+export class AddressesSeederService implements Seeder {
   constructor(
     @InjectRepository(Address)
     private readonly addressesRepository: Repository<Address>,
@@ -14,7 +15,7 @@ export class AddressesSeederService {
     private readonly usersRepository: Repository<User>,
   ) {}
 
-  async seed(): Promise<void> {
+  async run(dataSource: DataSource): Promise<void> {
     // Obtener todos los usuarios
     const users = await this.usersRepository.find();
 

@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { User } from '../../../models/users/entities/user.entity';
 import { UserFactory } from '../../factories/users/factory';
+import { Seeder } from '../seeder.interface';
 
 @Injectable()
-export class UsersSeederService {
+export class UsersSeederService implements Seeder {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
   ) {}
 
-  async seed(): Promise<void> {
+  async run(dataSource: DataSource): Promise<void> {
     // Crear super admin
     const superAdminExists = await this.usersRepository.findOne({
       where: { email: 'superadmin@example.com' },

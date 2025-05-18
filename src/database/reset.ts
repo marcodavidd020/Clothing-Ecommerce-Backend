@@ -10,11 +10,11 @@ const initialDbConfig = {
   port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
   user: process.env.POSTGRES_USERNAME || 'postgres',
   password: process.env.POSTGRES_PASSWORD || 'postgres',
-  database: process.env.POSTGRES_DATABASE || 'postgres', // Conectar a la BD 'postgres' o 'template1'
+  database: process.env.POSTGRES_MAINTENANCE_DATABASE || 'postgres', // Usar una variable diferente para la BD de mantenimiento o default a 'postgres'
 };
 
-// Nombre de la base de datos a recrear
-const targetDbName = 'ecommerce';
+// Nombre de la base de datos a recrear, obtenido de las variables de entorno
+const targetDbName = process.env.POSTGRES_DATABASE || 'ecommerce'; // Fallback a 'ecommerce' si no está definida
 
 async function resetDatabase() {
   console.log('Iniciando reset de base de datos...');

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Coupon } from '../../../models/coupons/entities/coupon.entity';
-import { CouponsSeederService } from './coupons.seeder';
+import { CouponsSeederService } from './coupons.seeder.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Coupon])],

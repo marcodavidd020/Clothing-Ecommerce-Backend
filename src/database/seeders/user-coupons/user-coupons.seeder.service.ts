@@ -1,13 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { DataSource, IsNull, Repository } from 'typeorm';
 import { UserCoupon } from '../../../models/user-coupons/entities/user-coupon.entity';
 import { User } from '../../../models/users/entities/user.entity';
 import { Coupon } from '../../../models/coupons/entities/coupon.entity';
 import { faker } from '@faker-js/faker';
+import { Seeder } from '../seeder.interface';
 
 @Injectable()
-export class UserCouponsSeederService {
+export class UserCouponsSeederService implements Seeder {
   private readonly logger = new Logger(UserCouponsSeederService.name);
 
   constructor(
@@ -19,7 +20,7 @@ export class UserCouponsSeederService {
     private readonly couponRepository: Repository<Coupon>,
   ) {}
 
-  async seed(): Promise<void> {
+  async run(dataSource: DataSource): Promise<void> {
     this.logger.log(
       'Iniciando siembra de asignaciones de cupones a usuarios...',
     );

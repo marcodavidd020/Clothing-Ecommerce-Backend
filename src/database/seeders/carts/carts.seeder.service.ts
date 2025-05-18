@@ -1,13 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Cart } from '../../../models/carts/entities/cart.entity';
 import { CartItem } from '../../../models/carts/entities/cart-item.entity';
 import { User } from '../../../models/users/entities/user.entity';
 import { ProductVariant } from '../../../models/products/entities/product-variant.entity';
+import { Seeder } from '../seeder.interface';
 
 @Injectable()
-export class CartsSeederService {
+export class CartsSeederService implements Seeder {
   private readonly logger = new Logger(CartsSeederService.name);
 
   constructor(
@@ -21,7 +22,7 @@ export class CartsSeederService {
     private readonly productVariantRepository: Repository<ProductVariant>,
   ) {}
 
-  async seed(): Promise<void> {
+  async run(dataSource: DataSource): Promise<void> {
     this.logger.log('Iniciando siembra de carritos...');
 
     try {

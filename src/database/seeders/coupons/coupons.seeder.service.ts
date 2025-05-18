@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Coupon } from '../../../models/coupons/entities/coupon.entity';
 import { CouponDiscountTypeEnum } from '../../../models/coupons/constants/coupon.enums';
 import { faker } from '@faker-js/faker';
+import { Seeder } from '../seeder.interface';
 
 @Injectable()
-export class CouponsSeederService {
+export class CouponsSeederService implements Seeder {
   private readonly logger = new Logger(CouponsSeederService.name);
 
   constructor(
@@ -14,7 +15,7 @@ export class CouponsSeederService {
     private readonly couponRepository: Repository<Coupon>,
   ) {}
 
-  async seed(): Promise<void> {
+  async run(dataSource: DataSource): Promise<void> {
     this.logger.log('Iniciando siembra de cupones...');
     try {
       const count = await this.couponRepository.count();

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Product } from '../../../models/products/entities/product.entity';
 import { ProductVariant } from '../../../models/products/entities/product-variant.entity';
 import { ProductImage } from '../../../models/products/entities/product-image.entity';
@@ -9,9 +9,10 @@ import { productFactory } from '../../factories/products/factory';
 import { productVariantFactory } from '../../factories/products/variant-factory';
 import { productImageFactory } from '../../factories/products/image-factory';
 import { faker } from '@faker-js/faker';
+import { Seeder } from '../seeder.interface';
 
 @Injectable()
-export class ProductsSeederService {
+export class ProductsSeederService implements Seeder {
   private readonly logger = new Logger(ProductsSeederService.name);
 
   constructor(
@@ -25,7 +26,7 @@ export class ProductsSeederService {
     private readonly categoryRepository: Repository<Category>,
   ) {}
 
-  async seed(): Promise<void> {
+  async run(dataSource: DataSource): Promise<void> {
     this.logger.log('Iniciando siembra de productos...');
     try {
       const count = await this.productRepository.count();
