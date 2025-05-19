@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Role } from '../../../models/roles/entities/role.entity';
 import { Seeder } from '../seeder.interface';
-
+import { USER_TYPES } from 'src/common/constants/settings';
 @Injectable()
 export class RolesSeeder implements Seeder {
   constructor(
@@ -22,24 +22,24 @@ export class RolesSeeder implements Seeder {
     // Crear roles básicos
     const roles = [
       {
-        name: 'Super Administrador',
-        slug: 'superadmin',
+        name: 'Super Admin',
+        slug: USER_TYPES.SUPER_ADMIN,
       },
       {
-        name: 'Administrador',
-        slug: 'admin',
+        name: 'Admin',
+        slug: USER_TYPES.ADMIN,
       },
       {
-        name: 'Usuario',
-        slug: 'user',
+        name: 'User',
+        slug: USER_TYPES.USER,
       },
       {
-        name: 'Gestor',
-        slug: 'manager',
+        name: 'Manager',
+        slug: USER_TYPES.MANAGER,
       },
       {
-        name: 'Cliente',
-        slug: 'client',
+        name: 'Client',
+        slug: USER_TYPES.CLIENT,
       },
     ];
 
