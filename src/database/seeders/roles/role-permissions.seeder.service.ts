@@ -5,6 +5,9 @@ import { Role } from '../../../models/roles/entities/role.entity';
 import { Permission } from '../../../models/permissions/entities/permission.entity';
 import { RolePermission } from '../../../models/permissions/entities/role-permission.entity';
 import { Seeder } from '../seeder.interface';
+import { CategoryPermissionsEnum, PermissionPermissionsEnum, RolePermissionsEnum, UserPermissionsEnum } from 'src/common/constants/permissions.enum';
+import { ProductPermissionsEnum } from 'src/models/products/constants/product-permissions.constant';
+import { USER_TYPES, DEFAULT_ACCESS_ROLES } from 'src/common/constants/settings';
 
 @Injectable()
 export class RolePermissionsSeeder implements Seeder {
@@ -28,16 +31,22 @@ export class RolePermissionsSeeder implements Seeder {
     }
 
     // Obtener todos los roles y permisos
-    const superAdminRole = await this.createOrGetRole('superadmin', 'Super Administrador');
+    const superAdminRole = await this.createOrGetRole(
+      DEFAULT_ACCESS_ROLES[0],
+      DEFAULT_ACCESS_ROLES[1],
+    );
     const adminRole = await this.rolesRepository.findOne({
-      where: { slug: 'admin' },
+      where: { slug: USER_TYPES.ADMIN },
     });
-    const userRole = await this.rolesRepository.findOne({ where: { slug: 'user' } });
+    const userRole = await this.rolesRepository.findOne({ where: { slug: USER_TYPES.USER } });
     const managerRole = await this.rolesRepository.findOne({
-      where: { slug: 'manager' },
+      where: { slug: USER_TYPES.MANAGER },
+    });
+    const clientRole = await this.rolesRepository.findOne({
+      where: { slug: USER_TYPES.CLIENT },
     });
 
-    if (!superAdminRole || !adminRole || !userRole || !managerRole) {
+    if (!superAdminRole || !adminRole || !userRole || !managerRole || !clientRole) {
       console.log(
         'No se encontraron los roles necesarios para asignar permisos',
       );
@@ -64,7 +73,7 @@ export class RolePermissionsSeeder implements Seeder {
 
     // Asignar permisos básicos al rol de usuario
     const userPermissions = allPermissions
-      .filter((permission) => permission.name.startsWith('users.view'))
+      .filter((permission) => permission.name.startsWith(UserPermissionsEnum.VIEW))
       .map((permission) => {
         const rolePermission = new RolePermission();
         rolePermission.role = userRole;
@@ -77,12 +86,26 @@ export class RolePermissionsSeeder implements Seeder {
       .filter(
         (permission) =>
           permission.name.startsWith('users.') ||
-          permission.name === 'roles.view' ||
-          permission.name === 'permissions.view',
+          permission.name === RolePermissionsEnum.VIEW ||
+          permission.name === PermissionPermissionsEnum.VIEW,
       )
       .map((permission) => {
         const rolePermission = new RolePermission();
         rolePermission.role = managerRole;
+        rolePermission.permission = permission;
+        return rolePermission;
+      });
+
+    // Asignar permisos de visualización de productos y categorías al rol de cliente
+    const clientPermissions = allPermissions
+      .filter(
+        (permission) =>
+          permission.name.startsWith(ProductPermissionsEnum.PRODUCT_VIEW) ||
+          permission.name.startsWith(CategoryPermissionsEnum.VIEW),
+      )
+      .map((permission) => {
+        const rolePermission = new RolePermission();
+        rolePermission.role = clientRole;
         rolePermission.permission = permission;
         return rolePermission;
       });
@@ -93,6 +116,7 @@ export class RolePermissionsSeeder implements Seeder {
       ...adminPermissions,
       ...userPermissions,
       ...managerPermissions,
+      ...clientPermissions,
     ]);
 
     console.log('Permisos asignados a roles correctamente');

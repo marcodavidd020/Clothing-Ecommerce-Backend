@@ -45,15 +45,15 @@ export const ERROR_MESSAGES = {
 
 // Tipos de usuario
 export const USER_TYPES = {
+  SUPER_ADMIN: 'super_admin',
   ADMIN: 'admin',
   USER: 'user',
-  EDITOR: 'editor',
   MANAGER: 'manager',
   CLIENT: 'client',
 };
 
 // Roles accesibles por defecto (para uso con @UserTypes decorator)
-export const DEFAULT_ACCESS_ROLES = [USER_TYPES.ADMIN];
+export const DEFAULT_ACCESS_ROLES = [USER_TYPES.SUPER_ADMIN, USER_TYPES.ADMIN];
 
 // Configuración de token JWT
 export const JWT_CONFIG = {
