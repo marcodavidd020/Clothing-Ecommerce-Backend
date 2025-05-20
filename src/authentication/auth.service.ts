@@ -235,7 +235,7 @@ export class AuthService {
         ...createUserDto,
         roles: [],
       };
-      
+
       const user = await this.usersService.create(userData);
 
       // Asignar rol predeterminado "user" al nuevo usuario
@@ -312,7 +312,7 @@ export class AuthService {
         ...createUserDto,
         roles: [],
       };
-      
+
       const user = await this.usersService.create(userData);
 
       // Asignar rol de cliente al nuevo usuario

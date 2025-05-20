@@ -5,9 +5,12 @@ import { Role } from '../../../models/roles/entities/role.entity';
 import { Permission } from '../../../models/permissions/entities/permission.entity';
 import { RolePermission } from '../../../models/permissions/entities/role-permission.entity';
 import { Seeder } from '../seeder.interface';
-import { CategoryPermissionsEnum, PermissionPermissionsEnum, RolePermissionsEnum, UserPermissionsEnum } from 'src/common/constants/permissions.enum';
 import { ProductPermissionsEnum } from 'src/models/products/constants/product-permissions.constant';
 import { USER_TYPES, DEFAULT_ACCESS_ROLES } from 'src/common/constants/settings';
+import { CategoryPermissionsEnum } from 'src/models/categories/constants/categorie-permissions';
+import { UserPermissionsEnum } from 'src/models/users/constants/user-permissions';
+import { RolePermissionsEnum } from 'src/models/roles/constants/role-permissions';
+import { PermissionPermissionsEnum } from 'src/models/permissions/constants/permission-permissions';
 
 @Injectable()
 export class RolePermissionsSeeder implements Seeder {

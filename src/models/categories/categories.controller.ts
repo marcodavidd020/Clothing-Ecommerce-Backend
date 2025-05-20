@@ -47,7 +47,7 @@ import {
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { RequirePermissions } from 'src/common/decorators/metadata/permissions.metadata';
-import { CategoryPermissionsEnum } from 'src/common/constants/permissions.enum';
+import { CategoryPermissionsEnum } from './constants/categorie-permissions';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import {
   paginatedResponseSchema,

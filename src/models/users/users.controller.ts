@@ -53,7 +53,7 @@ import {
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { RequirePermissions } from 'src/common/decorators/metadata/permissions.metadata';
-import { UserPermissionsEnum } from 'src/common/constants/permissions.enum';
+import { UserPermissionsEnum } from './constants/user-permissions';
 
 @ApiTags('Usuarios')
 @ApiBearerAuth('JWT-auth')
