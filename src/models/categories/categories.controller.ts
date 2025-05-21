@@ -101,11 +101,11 @@ export class CategoriesController {
   @ApiOperation({
     summary: 'Obtener árbol de categorías',
     description:
-      'Retorna las categorías en una estructura de árbol. Este endpoint no soporta paginación.',
+      'Retorna las categorías en una estructura de árbol, indicando cuáles tienen subcategorías con el atributo hasChildren e incluyendo los productos asociados a cada categoría. Este endpoint no soporta paginación.',
   })
   @ApiResponse({
     status: 200,
-    description: 'Árbol de categorías',
+    description: 'Árbol de categorías con indicador hasChildren y productos',
     type: CategorySerializer,
     isArray: true,
   })
@@ -121,7 +121,7 @@ export class CategoriesController {
 
   @ApiOperation({
     summary: 'Obtener categoría por ID',
-    description: 'Retorna los detalles de una categoría específica por su ID.',
+    description: 'Retorna los detalles de una categoría específica por su ID, incluyendo sus productos asociados.',
   })
   @ApiParam({
     name: 'id',
@@ -130,7 +130,7 @@ export class CategoriesController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Detalles de la categoría encontrada',
+    description: 'Detalles de la categoría encontrada y sus productos',
     type: CategorySerializer,
   })
   @ApiResponse({ status: 404, description: 'Categoría no encontrada' })
@@ -154,7 +154,7 @@ export class CategoriesController {
   @ApiOperation({
     summary: 'Obtener categoría por slug',
     description:
-      'Retorna los detalles de una categoría específica por su slug.',
+      'Retorna los detalles de una categoría específica por su slug, incluyendo sus productos asociados.',
   })
   @ApiParam({
     name: 'slug',
@@ -163,7 +163,7 @@ export class CategoriesController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Detalles de la categoría encontrada',
+    description: 'Detalles de la categoría encontrada y sus productos',
     type: CategorySerializer,
   })
   @ApiResponse({ status: 404, description: 'Categoría no encontrada' })
