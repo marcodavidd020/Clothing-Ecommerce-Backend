@@ -2,6 +2,7 @@ import { Exclude, Expose, Type, Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { Category } from '../entities/category.entity';
 import { ModelSerializer } from '../../common/serializers/model.serializer';
+import { ProductSerializer } from '../../products/serializers/product.serializer';
 
 export class CategorySerializer extends ModelSerializer {
   @ApiProperty({
@@ -39,6 +40,24 @@ export class CategorySerializer extends ModelSerializer {
   @Expose()
   @Type(() => CategorySerializer)
   children: CategorySerializer[];
+
+  @ApiProperty({
+    example: true,
+    description: 'Indica si la categoría tiene subcategorías',
+    type: Boolean,
+  })
+  @Expose()
+  @Transform(({ obj }) => Array.isArray(obj.children) && obj.children.length > 0)
+  hasChildren: boolean;
+
+  @ApiProperty({
+    description: 'Productos asociados a esta categoría',
+    type: () => ProductSerializer,
+    isArray: true,
+  })
+  @Expose()
+  @Type(() => ProductSerializer)
+  products: ProductSerializer[];
 
   constructor(partial: Partial<Category>) {
     super(partial);

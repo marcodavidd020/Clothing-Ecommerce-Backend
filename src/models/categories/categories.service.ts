@@ -48,7 +48,9 @@ export class CategoriesService {
    * Obtener todas las categorías como árbol jerárquico
    */
   async findTrees(): Promise<CategorySerializer[]> {
-    return this.categoriesRepository.findTrees();
+    const trees = await this.categoriesRepository.findTrees();
+    // Enriquecemos el árbol con el atributo hasChildren explícito
+    return this.enhanceTreeWithAttributes(trees);
   }
 
   /**
@@ -59,6 +61,8 @@ export class CategoriesService {
     if (!category) {
       throw new NotFoundException(createNotFoundResponse('Categoría'));
     }
+    // Enriquecer con atributo hasChildren
+    this.enhanceCategoryWithAttributes(category);
     return category;
   }
 
@@ -66,7 +70,12 @@ export class CategoriesService {
    * Buscar categoría por slug
    */
   async findBySlug(slug: string): Promise<CategorySerializer | null> {
-    return this.categoriesRepository.findBySlug(slug);
+    const category = await this.categoriesRepository.findBySlug(slug);
+    if (category) {
+      // Enriquecer con hasChildren
+      this.enhanceCategoryWithAttributes(category);
+    }
+    return category;
   }
 
   /**
@@ -229,5 +238,34 @@ export class CategoriesService {
     );
 
     return serializedTree;
+  }
+
+  /**
+   * Ayudante para enriquecer el árbol con atributos adicionales
+   */
+  private enhanceTreeWithAttributes(
+    categories: CategorySerializer[],
+  ): CategorySerializer[] {
+    return categories.map((category) => {
+      // Calculamos hasChildren en base a la presencia de hijos
+      const hasChildren = Array.isArray(category.children) && category.children.length > 0;
+      category.hasChildren = hasChildren;
+
+      // Si tiene hijos, procesamos recursivamente
+      if (hasChildren) {
+        category.children = this.enhanceTreeWithAttributes(category.children);
+      }
+
+      return category;
+    });
+  }
+
+  /**
+   * Ayudante para enriquecer una categoría individual con atributos adicionales
+   */
+  private enhanceCategoryWithAttributes(
+    category: CategorySerializer,
+  ): void {
+    category.hasChildren = Array.isArray(category.children) && category.children.length > 0;
   }
 }

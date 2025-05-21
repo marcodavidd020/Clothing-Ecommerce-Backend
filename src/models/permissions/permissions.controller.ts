@@ -31,7 +31,7 @@ import {
 } from '../../common/helpers/responses/success.helper';
 import { ISuccessResponse } from '../../common/interfaces/response.interface';
 import { createNotFoundResponse } from '../../common/helpers/responses/error.helper';
-import { PermissionPermissionsEnum } from '../../common/constants/permissions.enum';
+import { PermissionPermissionsEnum } from './constants/permission-permissions';
 
 @ApiTags('Permisos')
 @Controller('permissions')

@@ -46,7 +46,9 @@ export class CategoriesRepository extends ModelRepository<
    * Obtener todas las categorías como árbol
    */
   async findTrees(): Promise<CategorySerializer[]> {
-    const trees = await this.categoryRepository.findTrees();
+    const trees = await this.categoryRepository.findTrees({
+      relations: ['products'],
+    });
     return this.transformMany(trees);
   }
 
@@ -89,12 +91,12 @@ export class CategoriesRepository extends ModelRepository<
   }
 
   /**
-   * Obtener una categoría por id (con hijos)
+   * Obtener una categoría por id (con hijos y productos)
    */
   async findById(id: string): Promise<CategorySerializer | null> {
     const category = await this.categoryRepository.findOne({
       where: { id },
-      relations: ['children'], // Incluir hijos directos
+      relations: ['children', 'products'], // Incluir hijos directos y productos
     });
     if (!category) {
       return null;
@@ -108,7 +110,7 @@ export class CategoriesRepository extends ModelRepository<
   async findBySlug(slug: string): Promise<CategorySerializer | null> {
     const category = await this.categoryRepository.findOne({
       where: { slug },
-      relations: ['children'], // Incluir hijos directos
+      relations: ['children', 'products'], // Incluir hijos directos y productos
     });
     if (!category) {
       return null;

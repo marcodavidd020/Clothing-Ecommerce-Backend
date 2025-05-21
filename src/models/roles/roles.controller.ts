@@ -32,10 +32,8 @@ import {
 } from '../../common/helpers/responses/success.helper';
 import { ISuccessResponse } from '../../common/interfaces/response.interface';
 import { createNotFoundResponse } from '../../common/helpers/responses/error.helper';
-import {
-  RolePermissionsEnum,
-  PermissionPermissionsEnum,
-} from '../../common/constants/permissions.enum';
+import { PermissionPermissionsEnum } from '../permissions/constants/permission-permissions';
+import { RolePermissionsEnum } from './constants/role-permissions';
 
 @ApiTags('Roles')
 @ApiBearerAuth('JWT-auth')

@@ -25,7 +25,7 @@ export class UsersSeederService implements Seeder {
           firstName: 'Super',
           lastName: 'Admin',
           password: 'superadmin123',  // Password fácil para pruebas
-          roles: ['admin', 'user'],
+          roles: ['super_admin', 'user'],
         }),
       );
       await this.usersRepository.save(superAdmin);

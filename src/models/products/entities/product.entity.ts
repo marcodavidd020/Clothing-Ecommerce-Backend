@@ -56,7 +56,7 @@ export class Product {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @ManyToMany(() => Category)
+  @ManyToMany(() => Category, (category) => category.products)
   @JoinTable({
     name: 'product_categories',
     joinColumn: {

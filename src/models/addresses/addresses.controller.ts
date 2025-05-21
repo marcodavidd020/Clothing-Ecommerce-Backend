@@ -45,7 +45,7 @@ import {
 } from '../../common/schemas/pagination.schema';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { RequirePermissions } from 'src/common/decorators/metadata/permissions.metadata';
-import { AddressPermissionsEnum } from 'src/common/constants/permissions.enum';
+import { AddressPermissionsEnum } from './constants/addres-permissions';
 import {
   serializeModel,
   serializeModels,

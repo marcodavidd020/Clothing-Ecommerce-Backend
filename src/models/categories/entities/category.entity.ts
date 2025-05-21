@@ -6,7 +6,10 @@ import {
   TreeParent,
   TreeChildren,
   Index,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
+import { Product } from '../../products/entities/product.entity';
 
 @Entity('categories')
 @Tree('closure-table') // Usaremos closure-table para la relación de árbol/jerarquía
@@ -30,4 +33,18 @@ export class Category {
 
   @TreeChildren()
   children: Category[];
+
+  @ManyToMany(() => Product, (product) => product.categories)
+  @JoinTable({
+    name: 'product_categories',
+    joinColumn: {
+      name: 'category_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'product_id',
+      referencedColumnName: 'id',
+    },
+  })
+  products: Product[];
 }

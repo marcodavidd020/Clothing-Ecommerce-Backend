@@ -5,6 +5,7 @@ export interface ICategory {
   image?: string | null;
   parentId?: string | null;
   children?: ICategory[];
+  hasChildren?: boolean;
 }
 
 export interface ICategoryCreate {
