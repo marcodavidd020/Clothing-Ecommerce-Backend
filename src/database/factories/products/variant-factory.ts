@@ -14,16 +14,16 @@ class ProductVariantFactory {
     overrideOptions: Partial<ProductVariant> = {},
   ): ProductVariant {
     const colors = [
-      'Negro',
-      'Blanco',
-      'Rojo',
-      'Azul',
-      'Verde',
-      'Amarillo',
-      'Gris',
-      'Morado',
+      'Black',
+      'White',
+      'Red',
+      'Blue',
+      'Green',
+      'Yellow',
+      'Gray',
+      'Purple',
     ];
-    const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Única'];
+    const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Unique'];
 
     const variant = new ProductVariant();
     variant.color = overrideOptions.color || faker.helpers.arrayElement(colors);

@@ -195,4 +195,23 @@ export class ProductsRepository extends ModelRepository<
   async save(entity: Product): Promise<Product> {
     return this.repository.save(entity);
   }
+
+  async findByCategoryId(categoryId: string, relations: string[] = []): Promise<Product[]> {
+    const queryBuilder = this.repository.createQueryBuilder('product')
+      .innerJoin('product.categories', 'category', 'category.id = :categoryId', { categoryId })
+      .where('product.isActive = :isActive', { isActive: true });
+
+    if (relations.includes('categories')) {
+      queryBuilder.leftJoinAndSelect('product.categories', 'categories_alias'); // Usar un alias diferente para evitar conflicto
+    }
+    if (relations.includes('variants')) {
+      queryBuilder.leftJoinAndSelect('product.variants', 'variants');
+    }
+    if (relations.includes('images')) {
+      queryBuilder.leftJoinAndSelect('product.images', 'images');
+    }
+    // Puedes añadir más relaciones aquí si es necesario
+
+    return queryBuilder.getMany();
+  }
 }

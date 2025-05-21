@@ -86,6 +86,29 @@ export class ProductsController {
     return this.productsService.findAll();
   }
 
+  @Get('by-category/:categoryId')
+  @RequirePermissions(ProductPermissionsEnum.PRODUCT_VIEW)
+  @ApiOperation({ summary: 'Obtener productos por ID de categoría' })
+  @ApiParam({ name: 'categoryId', description: 'ID de la categoría', type: String })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de productos para la categoría especificada',
+    type: ProductSerializer,
+    isArray: true,
+  })
+  @ApiResponse({ status: 404, description: 'Categoría no encontrada o sin productos' })
+  async findProductsByCategoryId(
+    @Param('categoryId', ParseUUIDPipe) categoryId: string,
+  ): Promise<ProductSerializer[]> {
+    const products = await this.productsService.findProductsByCategoryId(categoryId);
+    if (!products || products.length === 0) {
+      // Puedes decidir si devolver un 404 o un 200 con array vacío.
+      // Por consistencia con otros endpoints que devuelven listas, un 200 con array vacío es común.
+      // throw new NotFoundException(`No se encontraron productos para la categoría con ID ${categoryId}`);
+    }
+    return products;
+  }
+
   @Get(':id')
   @RequirePermissions(ProductPermissionsEnum.PRODUCT_VIEW)
   @ApiOperation({ summary: 'Obtener un producto por ID' })
