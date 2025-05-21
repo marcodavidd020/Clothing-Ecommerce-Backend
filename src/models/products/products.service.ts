@@ -94,6 +94,27 @@ export class ProductsService implements IProductsService {
   }
 
   /**
+   * Obtener productos por ID de categoría
+   */
+  async findProductsByCategoryId(categoryId: string): Promise<ProductSerializer[]> {
+    // Podríamos añadir una validación aquí para asegurar que la categoría existe si es necesario,
+    // pero el innerJoin en el repositorio ya se encarga de no devolver nada si la categoría no existe o no tiene productos.
+    // Tambien podria ser util cargar las categorias para asegurar que el categoryId es valido.
+    // const category = await this.dataSource.getRepository(Category).findOneBy({ id: categoryId });
+    // if (!category) {
+    //   throw new NotFoundException(`Categoría con ID ${categoryId} no encontrada.`);
+    // }
+
+    let products: Product[] = await this.productsRepository.findByCategoryId(categoryId, [
+      'categories', // Para incluir los detalles de la categoría en cada producto si es necesario
+      'variants',
+      'images',
+    ]);
+    products = products.map((product) => this.filterActiveRelations(product));
+    return this.transformManyToSerializer(products);
+  }
+
+  /**
    * Buscar producto por ID
    */
   async findById(id: string): Promise<ProductSerializer> {
