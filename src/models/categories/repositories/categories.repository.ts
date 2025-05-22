@@ -159,6 +159,7 @@ export class CategoriesRepository extends ModelRepository<
     // Actualizar name y slug si están presentes en data
     if (data.name !== undefined) category.name = data.name;
     if (data.slug !== undefined) category.slug = data.slug;
+    if (data.image !== undefined) category.image = data.image;
 
     // Manejar cambio de padre por separado
     if (parentId !== undefined) {

@@ -46,21 +46,21 @@ export class CategoriesSeederService implements Seeder {
       this.logger.log('Creando subcategorías de ropa...');
       // Subcategorías de ropa
       const ropaHombreData = categoryFactory.generate({
-        name: 'Ropa de Hombre',
+        name: 'Hombre',
         slug: 'ropa-hombre',
         parent: savedRopa,
         image:
-          'https://images.unsplash.com/photo-1617137968427-85924c800a22?w=800',
+          'https://res.cloudinary.com/dg2ugi96k/image/upload/v1747863717/ropa-man_f1k5y6.png',
       });
       const ropaMujerData = categoryFactory.generate({
-        name: 'Ropa de Mujer',
+        name: 'Mujer',
         slug: 'ropa-mujer',
         parent: savedRopa,
         image:
-          'https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=800',
+          'https://res.cloudinary.com/dg2ugi96k/image/upload/v1747902712/ropa-woman_anqyvl.png',
       });
       const ropaNinoData = categoryFactory.generate({
-        name: 'Ropa de Niño',
+        name: 'Niño',
         slug: 'ropa-nino',
         parent: savedRopa,
         image:
