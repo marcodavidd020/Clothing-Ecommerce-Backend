@@ -50,21 +50,21 @@ export class CategoriesSeederService implements Seeder {
         slug: 'ropa-hombre',
         parent: savedRopa,
         image:
-          'https://res.cloudinary.com/dg2ugi96k/image/upload/v1747863717/ropa-man_f1k5y6.png',
+          'https://res.cloudinary.com/dg2ugi96k/image/upload/v1747956417/man_jxzqmw.png',
       });
       const ropaMujerData = categoryFactory.generate({
         name: 'Mujer',
         slug: 'ropa-mujer',
         parent: savedRopa,
         image:
-          'https://res.cloudinary.com/dg2ugi96k/image/upload/v1747902712/ropa-woman_anqyvl.png',
+          'https://res.cloudinary.com/dg2ugi96k/image/upload/v1747956417/women_ipqlht.png',
       });
       const ropaNinoData = categoryFactory.generate({
         name: 'Niño',
         slug: 'ropa-nino',
         parent: savedRopa,
         image:
-          'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?w=800',
+          'https://res.cloudinary.com/dg2ugi96k/image/upload/v1747956417/child_yepbbl.png',
       });
 
       const savedRopaHombre =

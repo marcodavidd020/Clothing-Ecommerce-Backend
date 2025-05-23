@@ -26,6 +26,7 @@ import { ApplyFixedDiscountDto } from './dto/apply-fixed-discount.dto';
 import { ChangeProductStockDto } from './dto/change-product-stock.dto';
 import { DataSource, EntityManager, In } from 'typeorm';
 import { Category } from '../categories/entities/category.entity';
+import { CategoriesRepository } from '../categories/repositories/categories.repository';
 
 @Injectable()
 export class ProductsService implements IProductsService {
@@ -36,6 +37,7 @@ export class ProductsService implements IProductsService {
     private readonly productsRepository: ProductsRepository,
     private readonly variantsRepository: ProductVariantsRepository,
     private readonly imagesRepository: ProductImagesRepository,
+    private readonly categoriesRepository: CategoriesRepository,
   ) {}
 
   private filterActiveRelations(product: Product): Product {
@@ -94,24 +96,73 @@ export class ProductsService implements IProductsService {
   }
 
   /**
-   * Obtener productos por ID de categoría
+   * Obtener productos por ID de categoría, incluyendo todos los productos de subcategorías
    */
-  async findProductsByCategoryId(categoryId: string): Promise<ProductSerializer[]> {
-    // Podríamos añadir una validación aquí para asegurar que la categoría existe si es necesario,
-    // pero el innerJoin en el repositorio ya se encarga de no devolver nada si la categoría no existe o no tiene productos.
-    // Tambien podria ser util cargar las categorias para asegurar que el categoryId es valido.
-    // const category = await this.dataSource.getRepository(Category).findOneBy({ id: categoryId });
-    // if (!category) {
-    //   throw new NotFoundException(`Categoría con ID ${categoryId} no encontrada.`);
-    // }
+  async findProductsByCategoryId(
+    categoryId: string,
+    options?: IPaginationOptions,
+  ): Promise<ProductSerializer[] | IPaginatedResult<ProductSerializer>> {
+    // Obtener la categoría con su ID
+    const categoryEntity =
+      await this.categoriesRepository.getRawById(categoryId);
+    if (!categoryEntity) {
+      throw new NotFoundException(
+        `Categoría con ID ${categoryId} no encontrada.`,
+      );
+    }
 
-    let products: Product[] = await this.productsRepository.findByCategoryId(categoryId, [
-      'categories', // Para incluir los detalles de la categoría en cada producto si es necesario
-      'variants',
-      'images',
-    ]);
+    // Obtener el árbol de descendientes para esta categoría
+    const categoryTree =
+      await this.categoriesRepository.findDescendantsTree(categoryEntity);
+
+    // Extraer todos los IDs de categoría del árbol (categoría principal + todos sus descendientes)
+    const categoryIds = this.extractCategoryIdsFromTree(categoryTree);
+
+    this.logger.debug(
+      `Obteniendo productos para ${categoryIds.length} categorías: [${categoryIds.join(', ')}]`,
+    );
+
+    // Si se proporcionan opciones de paginación, usar el método paginado
+    if (options?.page || options?.limit) {
+      return this.productsRepository.paginateByCategoryIds(
+        categoryIds,
+        {
+          page: options.page || 1,
+          limit: options.limit || 10,
+        },
+        ['categories', 'variants', 'images'],
+      );
+    }
+
+    // Si no hay paginación, devolver todos los productos
+    let products: Product[] = await this.productsRepository.findByCategoryIds(
+      categoryIds,
+      ['categories', 'variants', 'images'],
+    );
+
     products = products.map((product) => this.filterActiveRelations(product));
     return this.transformManyToSerializer(products);
+  }
+
+  /**
+   * Función auxiliar para extraer todos los IDs de categorías de un árbol de categorías
+   * @param categoryTree El árbol de categorías
+   * @returns Array con todos los IDs de categoría
+   */
+  private extractCategoryIdsFromTree(categoryTree?: Category): string[] {
+    if (!categoryTree) {
+      return [];
+    }
+
+    const ids: string[] = [categoryTree.id];
+
+    if (categoryTree.children && categoryTree.children.length > 0) {
+      categoryTree.children.forEach((child) => {
+        ids.push(...this.extractCategoryIdsFromTree(child));
+      });
+    }
+
+    return ids;
   }
 
   /**
@@ -492,5 +543,127 @@ export class ProductsService implements IProductsService {
     } else {
       return this.productsRepository.save(product);
     }
+  }
+
+  /**
+   * Obtiene los productos más vendidos (simulación)
+   * @param limit Cantidad de productos a devolver
+   * @returns Lista de productos más vendidos
+   */
+  async findBestSellers(limit: number = 10): Promise<ProductSerializer[]> {
+    const products = await this.productsRepository.findBestSellers(limit, [
+      'categories',
+      'variants',
+      'images',
+    ]);
+
+    const filteredProducts = products.map((product) =>
+      this.filterActiveRelations(product),
+    );
+    return this.transformManyToSerializer(filteredProducts);
+  }
+
+  /**
+   * Obtiene los productos más recientes
+   * @param limit Cantidad de productos a devolver
+   * @returns Lista de productos más recientes
+   */
+  async findNewest(limit: number = 10): Promise<ProductSerializer[]> {
+    const products = await this.productsRepository.findNewest(limit, [
+      'categories',
+      'variants',
+      'images',
+    ]);
+
+    const filteredProducts = products.map((product) =>
+      this.filterActiveRelations(product),
+    );
+    return this.transformManyToSerializer(filteredProducts);
+  }
+
+  /**
+   * Obtiene los productos más vendidos de una categoría específica y todas sus subcategorías
+   * @param categoryId ID de la categoría
+   * @param limit Cantidad de productos a devolver
+   * @returns Lista de productos más vendidos de la categoría y sus subcategorías
+   */
+  async findBestSellersByCategory(
+    categoryId: string,
+    limit: number = 10,
+  ): Promise<ProductSerializer[]> {
+    // Obtener la categoría con su ID
+    const categoryEntity =
+      await this.categoriesRepository.getRawById(categoryId);
+    if (!categoryEntity) {
+      throw new NotFoundException(
+        `Categoría con ID ${categoryId} no encontrada.`,
+      );
+    }
+
+    // Obtener el árbol de descendientes para esta categoría
+    const categoryTree =
+      await this.categoriesRepository.findDescendantsTree(categoryEntity);
+
+    // Extraer todos los IDs de categoría del árbol (categoría principal + todos sus descendientes)
+    const categoryIds = this.extractCategoryIdsFromTree(categoryTree);
+
+    this.logger.debug(
+      `Obteniendo los ${limit} productos más vendidos para ${categoryIds.length} categorías: [${categoryIds.join(', ')}]`,
+    );
+
+    // Obtener los productos más vendidos de estas categorías
+    const products = await this.productsRepository.findBestSellersByCategoryIds(
+      categoryIds,
+      limit,
+      ['categories', 'variants', 'images'],
+    );
+
+    const filteredProducts = products.map((product) =>
+      this.filterActiveRelations(product),
+    );
+    return this.transformManyToSerializer(filteredProducts);
+  }
+
+  /**
+   * Obtiene los productos más recientes de una categoría específica y todas sus subcategorías
+   * @param categoryId ID de la categoría
+   * @param limit Cantidad de productos a devolver
+   * @returns Lista de productos más recientes de la categoría y sus subcategorías
+   */
+  async findNewestByCategory(
+    categoryId: string,
+    limit: number = 10,
+  ): Promise<ProductSerializer[]> {
+    // Obtener la categoría con su ID
+    const categoryEntity =
+      await this.categoriesRepository.getRawById(categoryId);
+    if (!categoryEntity) {
+      throw new NotFoundException(
+        `Categoría con ID ${categoryId} no encontrada.`,
+      );
+    }
+
+    // Obtener el árbol de descendientes para esta categoría
+    const categoryTree =
+      await this.categoriesRepository.findDescendantsTree(categoryEntity);
+
+    // Extraer todos los IDs de categoría del árbol (categoría principal + todos sus descendientes)
+    const categoryIds = this.extractCategoryIdsFromTree(categoryTree);
+
+    this.logger.debug(
+      `Obteniendo los ${limit} productos más recientes para ${categoryIds.length} categorías: [${categoryIds.join(', ')}]`,
+    );
+
+    // Obtener los productos más recientes de estas categorías
+    const products = await this.productsRepository.findNewestByCategoryIds(
+      categoryIds,
+      limit,
+      ['categories', 'variants', 'images'],
+    );
+
+    const filteredProducts = products.map((product) =>
+      this.filterActiveRelations(product),
+    );
+    return this.transformManyToSerializer(filteredProducts);
   }
 }

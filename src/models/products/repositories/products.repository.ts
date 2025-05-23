@@ -111,7 +111,10 @@ export class ProductsRepository extends ModelRepository<
     });
   }
 
-  async findEntityById(id: string, relations: string[] = []): Promise<Product | null> {
+  async findEntityById(
+    id: string,
+    relations: string[] = [],
+  ): Promise<Product | null> {
     return this.repository.findOne({
       where: { id, isActive: true }, // O solo { id } si se necesita incluso inactivos
       relations,
@@ -144,10 +147,7 @@ export class ProductsRepository extends ModelRepository<
     return this.repository.save(newProduct);
   }
 
-  async update(
-    id: string,
-    data: UpdateProductDto,
-  ): Promise<Product | null> {
+  async update(id: string, data: UpdateProductDto): Promise<Product | null> {
     const product = await this.repository.findOne({
       where: { id, isActive: true },
       relations: ['categories'],
@@ -196,9 +196,18 @@ export class ProductsRepository extends ModelRepository<
     return this.repository.save(entity);
   }
 
-  async findByCategoryId(categoryId: string, relations: string[] = []): Promise<Product[]> {
-    const queryBuilder = this.repository.createQueryBuilder('product')
-      .innerJoin('product.categories', 'category', 'category.id = :categoryId', { categoryId })
+  async findByCategoryId(
+    categoryId: string,
+    relations: string[] = [],
+  ): Promise<Product[]> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('product')
+      .innerJoin(
+        'product.categories',
+        'category',
+        'category.id = :categoryId',
+        { categoryId },
+      )
       .where('product.isActive = :isActive', { isActive: true });
 
     if (relations.includes('categories')) {
@@ -211,6 +220,266 @@ export class ProductsRepository extends ModelRepository<
       queryBuilder.leftJoinAndSelect('product.images', 'images');
     }
     // Puedes añadir más relaciones aquí si es necesario
+
+    return queryBuilder.getMany();
+  }
+
+  /**
+   * Busca productos que pertenezcan a cualquiera de las categorías especificadas
+   * @param categoryIds Array con los IDs de las categorías
+   * @param relations Relaciones a cargar
+   * @returns Array de productos
+   */
+  async findByCategoryIds(
+    categoryIds: string[],
+    relations: string[] = [],
+  ): Promise<Product[]> {
+    if (!categoryIds || categoryIds.length === 0) {
+      return [];
+    }
+
+    const queryBuilder = this.repository
+      .createQueryBuilder('product')
+      .innerJoin(
+        'product.categories',
+        'category',
+        'category.id IN (:...categoryIds)',
+        { categoryIds },
+      )
+      .where('product.isActive = :isActive', { isActive: true })
+      .distinct(true); // Evita duplicados si un producto pertenece a múltiples categorías del array
+
+    if (relations.includes('categories')) {
+      queryBuilder.leftJoinAndSelect('product.categories', 'categories_alias');
+    }
+    if (relations.includes('variants')) {
+      queryBuilder.leftJoinAndSelect('product.variants', 'variants');
+    }
+    if (relations.includes('images')) {
+      queryBuilder.leftJoinAndSelect('product.images', 'images');
+    }
+    // Puedes añadir más relaciones aquí si es necesario
+
+    return queryBuilder.getMany();
+  }
+
+  /**
+   * Pagina productos que pertenecen a cualquiera de las categorías especificadas
+   * @param categoryIds Array con los IDs de las categorías
+   * @param options Opciones de paginación
+   * @param relations Relaciones a cargar
+   * @returns Resultado paginado de productos
+   */
+  async paginateByCategoryIds(
+    categoryIds: string[],
+    options: IPaginationOptions,
+    relations: string[] = [],
+  ): Promise<IPaginatedResult<ProductSerializer>> {
+    if (!categoryIds || categoryIds.length === 0) {
+      return {
+        data: [],
+        pagination: {
+          totalItems: 0,
+          totalPages: 0,
+          currentPage: options.page || 1,
+          pageSize: options.limit || 10,
+          hasNextPage: false,
+          hasPrevPage: false,
+        },
+      };
+    }
+
+    const page = options.page || 1;
+    const limit = options.limit || 10;
+    const skip = (page - 1) * limit;
+
+    const queryBuilder = this.repository
+      .createQueryBuilder('product')
+      .innerJoin(
+        'product.categories',
+        'category',
+        'category.id IN (:...categoryIds)',
+        { categoryIds },
+      )
+      .where('product.isActive = :isActive', { isActive: true })
+      .distinct(true);
+
+    if (relations.includes('categories')) {
+      queryBuilder.leftJoinAndSelect('product.categories', 'categories_alias');
+    }
+    if (relations.includes('variants')) {
+      queryBuilder.leftJoinAndSelect('product.variants', 'variants');
+    }
+    if (relations.includes('images')) {
+      queryBuilder.leftJoinAndSelect('product.images', 'images');
+    }
+
+    queryBuilder.skip(skip).take(limit);
+
+    const [entities, totalItems] = await queryBuilder.getManyAndCount();
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: this.transformMany(entities),
+      pagination: {
+        totalItems,
+        totalPages,
+        currentPage: page,
+        pageSize: limit,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    };
+  }
+
+  /**
+   * Obtiene los productos más vendidos (simulación)
+   * Nota: Esta es una simulación ya que no tenemos un campo real de ventas.
+   * En una implementación real, deberías tener un campo salesCount en la entidad Product o usar datos de una tabla de pedidos.
+   * @param limit Cantidad de productos a devolver
+   * @param relations Relaciones a cargar
+   * @returns Array de productos más vendidos
+   */
+  async findBestSellers(
+    limit: number = 10,
+    relations: string[] = [],
+  ): Promise<Product[]> {
+    // En una implementación real, ordenaríamos por un campo salesCount
+    // Por ahora, haremos una simulación ordenando por stock (asumiendo que menos stock = más vendido)
+    const queryBuilder = this.repository
+      .createQueryBuilder('product')
+      .where('product.isActive = :isActive', { isActive: true })
+      // Ordenamos por stock ascendente como simulación (menos stock = más vendido)
+      .orderBy('product.stock', 'ASC')
+      .limit(limit);
+
+    // Añadir relaciones
+    if (relations.includes('categories')) {
+      queryBuilder.leftJoinAndSelect('product.categories', 'categories');
+    }
+    if (relations.includes('variants')) {
+      queryBuilder.leftJoinAndSelect('product.variants', 'variants');
+    }
+    if (relations.includes('images')) {
+      queryBuilder.leftJoinAndSelect('product.images', 'images');
+    }
+
+    return queryBuilder.getMany();
+  }
+
+  /**
+   * Obtiene los productos más recientes
+   * @param limit Cantidad de productos a devolver
+   * @param relations Relaciones a cargar
+   * @returns Array de productos más recientes
+   */
+  async findNewest(
+    limit: number = 10,
+    relations: string[] = [],
+  ): Promise<Product[]> {
+    const queryBuilder = this.repository
+      .createQueryBuilder('product')
+      .where('product.isActive = :isActive', { isActive: true })
+      .orderBy('product.createdAt', 'DESC') // Ordenamos por fecha de creación descendente
+      .limit(limit);
+
+    // Añadir relaciones
+    if (relations.includes('categories')) {
+      queryBuilder.leftJoinAndSelect('product.categories', 'categories');
+    }
+    if (relations.includes('variants')) {
+      queryBuilder.leftJoinAndSelect('product.variants', 'variants');
+    }
+    if (relations.includes('images')) {
+      queryBuilder.leftJoinAndSelect('product.images', 'images');
+    }
+
+    return queryBuilder.getMany();
+  }
+
+  /**
+   * Obtiene los productos más vendidos de categorías específicas y sus subcategorías
+   * @param categoryIds Array con los IDs de las categorías
+   * @param limit Cantidad de productos a devolver
+   * @param relations Relaciones a cargar
+   * @returns Array de productos más vendidos de las categorías especificadas
+   */
+  async findBestSellersByCategoryIds(
+    categoryIds: string[],
+    limit: number = 10,
+    relations: string[] = [],
+  ): Promise<Product[]> {
+    if (!categoryIds || categoryIds.length === 0) {
+      return [];
+    }
+
+    const queryBuilder = this.repository
+      .createQueryBuilder('product')
+      .innerJoin(
+        'product.categories',
+        'category',
+        'category.id IN (:...categoryIds)',
+        { categoryIds },
+      )
+      .where('product.isActive = :isActive', { isActive: true })
+      .orderBy('product.stock', 'ASC') // Simulación: menos stock = más vendido
+      .distinct(true)
+      .limit(limit);
+
+    // Añadir relaciones
+    if (relations.includes('categories')) {
+      queryBuilder.leftJoinAndSelect('product.categories', 'categories_alias');
+    }
+    if (relations.includes('variants')) {
+      queryBuilder.leftJoinAndSelect('product.variants', 'variants');
+    }
+    if (relations.includes('images')) {
+      queryBuilder.leftJoinAndSelect('product.images', 'images');
+    }
+
+    return queryBuilder.getMany();
+  }
+
+  /**
+   * Obtiene los productos más recientes de categorías específicas y sus subcategorías
+   * @param categoryIds Array con los IDs de las categorías
+   * @param limit Cantidad de productos a devolver
+   * @param relations Relaciones a cargar
+   * @returns Array de productos más recientes de las categorías especificadas
+   */
+  async findNewestByCategoryIds(
+    categoryIds: string[],
+    limit: number = 10,
+    relations: string[] = [],
+  ): Promise<Product[]> {
+    if (!categoryIds || categoryIds.length === 0) {
+      return [];
+    }
+
+    const queryBuilder = this.repository
+      .createQueryBuilder('product')
+      .innerJoin(
+        'product.categories',
+        'category',
+        'category.id IN (:...categoryIds)',
+        { categoryIds },
+      )
+      .where('product.isActive = :isActive', { isActive: true })
+      .orderBy('product.createdAt', 'DESC') // Ordenamos por fecha de creación descendente
+      .distinct(true)
+      .limit(limit);
+
+    // Añadir relaciones
+    if (relations.includes('categories')) {
+      queryBuilder.leftJoinAndSelect('product.categories', 'categories_alias');
+    }
+    if (relations.includes('variants')) {
+      queryBuilder.leftJoinAndSelect('product.variants', 'variants');
+    }
+    if (relations.includes('images')) {
+      queryBuilder.leftJoinAndSelect('product.images', 'images');
+    }
 
     return queryBuilder.getMany();
   }

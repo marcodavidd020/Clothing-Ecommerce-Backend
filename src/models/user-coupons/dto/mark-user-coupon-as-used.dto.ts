@@ -7,7 +7,8 @@ import { Type } from 'class-transformer';
 // Si se quisiera permitir especificar la fecha de uso desde el body, se añadiría aquí.
 export class MarkUserCouponAsUsedDto {
   @ApiPropertyOptional({
-    description: 'Fecha específica en que se usó el cupón. Si no se provee, se usa la fecha actual.',
+    description:
+      'Fecha específica en que se usó el cupón. Si no se provee, se usa la fecha actual.',
     type: Date,
     example: '2024-07-15T10:00:00.000Z',
   })
@@ -15,4 +16,4 @@ export class MarkUserCouponAsUsedDto {
   @Type(() => Date)
   @IsDate()
   usedAt?: Date;
-} 
+}
