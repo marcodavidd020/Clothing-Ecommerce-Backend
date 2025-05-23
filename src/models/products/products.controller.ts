@@ -86,27 +86,145 @@ export class ProductsController {
     return this.productsService.findAll();
   }
 
-  @Get('by-category/:categoryId')
+  @Get('best-sellers')
   @RequirePermissions(ProductPermissionsEnum.PRODUCT_VIEW)
-  @ApiOperation({ summary: 'Obtener productos por ID de categoría' })
-  @ApiParam({ name: 'categoryId', description: 'ID de la categoría', type: String })
+  @ApiOperation({ summary: 'Obtener los productos más vendidos' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Cantidad de productos a devolver (10 por defecto)',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Lista de productos para la categoría especificada',
+    description: 'Lista de productos más vendidos',
     type: ProductSerializer,
     isArray: true,
   })
-  @ApiResponse({ status: 404, description: 'Categoría no encontrada o sin productos' })
+  async findBestSellers(
+    @Query('limit') limit?: number,
+  ): Promise<ProductSerializer[]> {
+    return this.productsService.findBestSellers(limit);
+  }
+
+  @Get('newest')
+  @RequirePermissions(ProductPermissionsEnum.PRODUCT_VIEW)
+  @ApiOperation({ summary: 'Obtener los productos más recientes' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Cantidad de productos a devolver (10 por defecto)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de productos más recientes',
+    type: ProductSerializer,
+    isArray: true,
+  })
+  async findNewest(
+    @Query('limit') limit?: number,
+  ): Promise<ProductSerializer[]> {
+    return this.productsService.findNewest(limit);
+  }
+
+  @Get('by-category/:categoryId')
+  @RequirePermissions(ProductPermissionsEnum.PRODUCT_VIEW)
+  @ApiOperation({
+    summary: 'Obtener productos por ID de categoría y todas sus subcategorías',
+  })
+  @ApiParam({
+    name: 'categoryId',
+    description: 'ID de la categoría',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Número de página (1 por defecto)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Elementos por página (10 por defecto)',
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Lista de productos para la categoría especificada y todas sus subcategorías',
+    schema: paginatedResponseSchema('#/components/schemas/ProductSerializer'),
+  })
+  @ApiResponse({ status: 404, description: 'Categoría no encontrada' })
   async findProductsByCategoryId(
     @Param('categoryId', ParseUUIDPipe) categoryId: string,
+    @Query() paginationDto: PaginationDto,
+  ): Promise<ProductSerializer[] | IPaginatedResult<ProductSerializer>> {
+    return this.productsService.findProductsByCategoryId(categoryId, {
+      page: paginationDto.page,
+      limit: paginationDto.limit,
+    });
+  }
+
+  @Get('best-sellers/by-category/:categoryId')
+  @RequirePermissions(ProductPermissionsEnum.PRODUCT_VIEW)
+  @ApiOperation({
+    summary: 'Obtener los productos más vendidos de una categoría y todas sus subcategorías',
+  })
+  @ApiParam({
+    name: 'categoryId',
+    description: 'ID de la categoría',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Cantidad de productos a devolver (10 por defecto)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de productos más vendidos de la categoría y sus subcategorías',
+    type: ProductSerializer,
+    isArray: true,
+  })
+  @ApiResponse({ status: 404, description: 'Categoría no encontrada' })
+  async findBestSellersByCategory(
+    @Param('categoryId', ParseUUIDPipe) categoryId: string,
+    @Query('limit') limit?: number,
   ): Promise<ProductSerializer[]> {
-    const products = await this.productsService.findProductsByCategoryId(categoryId);
-    if (!products || products.length === 0) {
-      // Puedes decidir si devolver un 404 o un 200 con array vacío.
-      // Por consistencia con otros endpoints que devuelven listas, un 200 con array vacío es común.
-      // throw new NotFoundException(`No se encontraron productos para la categoría con ID ${categoryId}`);
-    }
-    return products;
+    return this.productsService.findBestSellersByCategory(categoryId, limit);
+  }
+
+  @Get('newest/by-category/:categoryId')
+  @RequirePermissions(ProductPermissionsEnum.PRODUCT_VIEW)
+  @ApiOperation({
+    summary: 'Obtener los productos más recientes de una categoría y todas sus subcategorías',
+  })
+  @ApiParam({
+    name: 'categoryId',
+    description: 'ID de la categoría',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Cantidad de productos a devolver (10 por defecto)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de productos más recientes de la categoría y sus subcategorías',
+    type: ProductSerializer,
+    isArray: true,
+  })
+  @ApiResponse({ status: 404, description: 'Categoría no encontrada' })
+  async findNewestByCategory(
+    @Param('categoryId', ParseUUIDPipe) categoryId: string,
+    @Query('limit') limit?: number,
+  ): Promise<ProductSerializer[]> {
+    return this.productsService.findNewestByCategory(categoryId, limit);
   }
 
   @Get(':id')
@@ -119,7 +237,9 @@ export class ProductsController {
     type: ProductSerializer,
   })
   @ApiResponse({ status: 404, description: 'Producto no encontrado' })
-  async findById(@Param('id', ParseUUIDPipe) id: string): Promise<ProductSerializer> {
+  async findById(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ProductSerializer> {
     return this.productsService.findById(id);
   }
 
@@ -150,7 +270,9 @@ export class ProductsController {
     description: 'Producto creado exitosamente',
     type: ProductSerializer,
   })
-  async create(@Body() createProductDto: CreateProductDto): Promise<ProductSerializer> {
+  async create(
+    @Body() createProductDto: CreateProductDto,
+  ): Promise<ProductSerializer> {
     return this.productsService.create(createProductDto);
   }
 
@@ -196,7 +318,11 @@ export class ProductsController {
   @ApiOperation({ summary: 'Aplicar un descuento porcentual al producto' })
   @ApiParam({ name: 'id', description: 'ID del producto', type: String })
   @ApiBody({ type: ApplyDiscountPercentageDto })
-  @ApiResponse({ status: 200, description: 'Descuento porcentual aplicado', type: ProductSerializer })
+  @ApiResponse({
+    status: 200,
+    description: 'Descuento porcentual aplicado',
+    type: ProductSerializer,
+  })
   @ApiResponse({ status: 404, description: 'Producto no encontrado' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   async applyDiscountPercentage(
@@ -211,7 +337,11 @@ export class ProductsController {
   @ApiOperation({ summary: 'Aplicar un descuento de monto fijo al producto' })
   @ApiParam({ name: 'id', description: 'ID del producto', type: String })
   @ApiBody({ type: ApplyFixedDiscountDto })
-  @ApiResponse({ status: 200, description: 'Descuento fijo aplicado', type: ProductSerializer })
+  @ApiResponse({
+    status: 200,
+    description: 'Descuento fijo aplicado',
+    type: ProductSerializer,
+  })
   @ApiResponse({ status: 404, description: 'Producto no encontrado' })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   async applyFixedDiscount(
@@ -225,7 +355,11 @@ export class ProductsController {
   @RequirePermissions(ProductPermissionsEnum.PRODUCT_UPDATE)
   @ApiOperation({ summary: 'Remover descuento del producto' })
   @ApiParam({ name: 'id', description: 'ID del producto', type: String })
-  @ApiResponse({ status: 200, description: 'Descuento removido', type: ProductSerializer })
+  @ApiResponse({
+    status: 200,
+    description: 'Descuento removido',
+    type: ProductSerializer,
+  })
   @ApiResponse({ status: 404, description: 'Producto no encontrado' })
   async removeDiscount(
     @Param('id', ParseUUIDPipe) id: string,
@@ -238,9 +372,16 @@ export class ProductsController {
   @ApiOperation({ summary: 'Cambiar el stock de un producto' })
   @ApiParam({ name: 'id', description: 'ID del producto', type: String })
   @ApiBody({ type: ChangeProductStockDto })
-  @ApiResponse({ status: 200, description: 'Stock actualizado', type: ProductSerializer })
+  @ApiResponse({
+    status: 200,
+    description: 'Stock actualizado',
+    type: ProductSerializer,
+  })
   @ApiResponse({ status: 404, description: 'Producto no encontrado' })
-  @ApiResponse({ status: 400, description: 'Cantidad inválida o stock resultante negativo' })
+  @ApiResponse({
+    status: 400,
+    description: 'Cantidad inválida o stock resultante negativo',
+  })
   async changeStock(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ChangeProductStockDto,

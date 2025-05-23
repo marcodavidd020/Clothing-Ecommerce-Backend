@@ -13,6 +13,7 @@ import { ProductVariantsService } from './product-variants.service';
 import { ProductImagesService } from './product-images.service';
 import { ProductVariantsController } from './product-variants.controller';
 import { ProductImagesController } from './product-images.controller';
+import { CategoriesRepository } from '../categories/repositories/categories.repository';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { ProductImagesController } from './product-images.controller';
     ProductVariantsRepository,
     ProductImagesService,
     ProductImagesRepository,
+    CategoriesRepository,
   ],
   exports: [
     ProductsService,
