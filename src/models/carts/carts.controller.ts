@@ -21,7 +21,6 @@ import {
   ApiBearerAuth,
   ApiParam,
   ApiBody,
-  ApiQuery,
 } from '@nestjs/swagger';
 import { CartsService } from './carts.service';
 import { CartSerializer } from './serializers/cart.serializer';
@@ -30,7 +29,7 @@ import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'; // Asumiendo esta ruta para el guard
 import { ISuccessResponse } from '../../common/interfaces/response.interface';
 import { createSuccessResponse } from '../../common/helpers/responses/success.helper';
-import { Request } from 'express'; // Para tipar req
+// import { Request } from 'express'; // Para tipar req
 import { RequirePermissions } from '../../common/decorators/metadata/permissions.metadata';
 import { CartPermissionsEnum } from './constants/cart-permissions'; // Usar permisos de carrito
 import { LoggedInUser } from '../../common/decorators/requests/logged-in-user.decorator';
@@ -213,7 +212,7 @@ export class CartsController {
   })
   @HttpCode(HttpStatus.OK)
   @RequirePermissions(CartPermissionsEnum.CLEAR)
-  @Delete('my-cart')
+  @Delete('my-cart/clear')
   async clearMyCart(
     @LoggedInUser() user: IJwtUser,
   ): Promise<ISuccessResponse<CartSerializer>> {
