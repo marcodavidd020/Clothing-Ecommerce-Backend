@@ -41,7 +41,11 @@ export class Order {
   @Column('uuid', { name: 'address_id', nullable: true })
   address_id: string | null;
 
-  @ManyToOne(() => Payment, { onDelete: 'SET NULL', nullable: true, cascade: true })
+  @ManyToOne(() => Payment, {
+    onDelete: 'SET NULL',
+    nullable: true,
+    cascade: true,
+  })
   @JoinColumn({ name: 'payment_id' })
   payment: Payment | null;
 
@@ -133,7 +137,12 @@ export class Order {
    * Conceptual: Obtiene un resumen de la orden.
    * La lógica real estará en el servicio o serializador.
    */
-  getSummary(): { id: string; total: number; status: string; itemCount: number } {
+  getSummary(): {
+    id: string;
+    total: number;
+    status: string;
+    itemCount: number;
+  } {
     return {
       id: this.id,
       total: this.totalAmount,
@@ -151,4 +160,4 @@ export class Order {
     // Aquí podrían ir validaciones de transición de estados si se quiere a nivel de entidad
     this.status = newStatus;
   }
-} 
+}

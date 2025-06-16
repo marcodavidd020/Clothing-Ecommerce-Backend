@@ -30,7 +30,9 @@ export class UsersService {
   async findPaginated(
     options: IPaginationOptions,
   ): Promise<IPaginatedResult<UserSerializer>> {
-    return this.usersRepository.paginate(options, ['addresses'], { isActive: true } as any);
+    return this.usersRepository.paginate(options, ['addresses'], {
+      isActive: true,
+    } as any);
   }
 
   async search(

@@ -10,4 +10,4 @@ export class ApplyFixedDiscountDto {
   @IsNumber()
   @Min(0)
   amount: number;
-} 
+}

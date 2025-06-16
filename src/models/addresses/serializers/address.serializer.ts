@@ -70,7 +70,10 @@ export class AddressSerializer extends ModelSerializer {
 
   @Expose()
   @Type(() => UserSerializer)
-  @ApiProperty({ type: () => UserSerializer, description: 'Usuario propietario de la dirección' })
+  @ApiProperty({
+    type: () => UserSerializer,
+    description: 'Usuario propietario de la dirección',
+  })
   user: UserSerializer;
 
   @ApiProperty({

@@ -9,13 +9,16 @@ class ProductImageFactory {
    * @param overrideOptions Opciones que sobreescriben los valores por defecto
    * @returns Objeto con datos de la imagen
    */
-  generate(product: Product, overrideOptions: Partial<ProductImage> = {}): ProductImage {
+  generate(
+    product: Product,
+    overrideOptions: Partial<ProductImage> = {},
+  ): ProductImage {
     const image = new ProductImage();
     image.url = overrideOptions.url || faker.image.url();
     image.alt = overrideOptions.alt || `Imagen de ${product.name}`;
     image.product = product;
     image.productId = product.id;
-    
+
     return image;
   }
 
@@ -30,4 +33,4 @@ class ProductImageFactory {
   }
 }
 
-export const productImageFactory = new ProductImageFactory(); 
+export const productImageFactory = new ProductImageFactory();

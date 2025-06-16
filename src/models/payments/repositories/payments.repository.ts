@@ -8,7 +8,10 @@ import {
   IPaymentCreate,
   IPaymentUpdate,
 } from '../interfaces/payment.interface';
-import { IPaginationOptions, IPaginatedResult } from 'src/common/interfaces/pagination.interface';
+import {
+  IPaginationOptions,
+  IPaginatedResult,
+} from 'src/common/interfaces/pagination.interface';
 
 @Injectable()
 export class PaymentsRepository extends ModelRepository<
@@ -71,7 +74,10 @@ export class PaymentsRepository extends ModelRepository<
     relations: string[] = [],
     customWhere?: FindOptionsWhere<Payment>,
   ): Promise<IPaginatedResult<PaymentSerializer>> {
-    const defaultWhere: FindOptionsWhere<Payment> = { isActive: true, ...customWhere };
+    const defaultWhere: FindOptionsWhere<Payment> = {
+      isActive: true,
+      ...customWhere,
+    };
     return super.paginate(options, relations, defaultWhere);
   }
 }

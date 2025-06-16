@@ -35,7 +35,6 @@ import { CartPermissionsEnum } from './constants/cart-permissions'; // Usar perm
 import { LoggedInUser } from '../../common/decorators/requests/logged-in-user.decorator';
 import { IJwtUser } from '../../authentication/interfaces/jwt-user.interface';
 
-
 @ApiTags('Carritos de Compra')
 @ApiBearerAuth('JWT-auth')
 @Controller('carts')

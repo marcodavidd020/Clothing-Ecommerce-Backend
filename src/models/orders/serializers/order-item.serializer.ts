@@ -13,7 +13,8 @@ export class OrderItemSerializer extends ModelSerializer {
   product_variant_id: string;
 
   @ApiProperty({
-    description: 'Detalles de la variante del producto en el momento de la compra.',
+    description:
+      'Detalles de la variante del producto en el momento de la compra.',
     type: () => ProductVariantSerializer, // Se mostrarán los datos de la variante
   })
   @Expose()
@@ -47,4 +48,4 @@ export class OrderItemSerializer extends ModelSerializer {
     super(partial);
     Object.assign(this, partial);
   }
-} 
+}

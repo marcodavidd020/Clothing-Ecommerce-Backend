@@ -22,9 +22,7 @@ class ProductFactory {
     product.discountPrice =
       overrideOptions.discountPrice ||
       (Math.random() > 0.7
-        ? parseFloat(
-            faker.commerce.price({ min: 5, max: product.price as number }),
-          )
+        ? parseFloat(faker.commerce.price({ min: 5, max: product.price }))
         : null);
     product.stock =
       overrideOptions.stock || faker.number.int({ min: 0, max: 100 });

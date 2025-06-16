@@ -24,7 +24,7 @@ export class UsersSeederService implements Seeder {
           email: 'superadmin@example.com',
           firstName: 'Super',
           lastName: 'Admin',
-          password: 'superadmin123',  // Password fácil para pruebas
+          password: 'superadmin123', // Password fácil para pruebas
           roles: ['super_admin', 'user'],
         }),
       );
@@ -43,7 +43,7 @@ export class UsersSeederService implements Seeder {
           email: 'admin@example.com',
           firstName: 'Admin',
           lastName: 'User',
-          password: 'admin123',  // Password fácil para pruebas
+          password: 'admin123', // Password fácil para pruebas
           roles: ['admin', 'user'],
         }),
       );
@@ -53,7 +53,8 @@ export class UsersSeederService implements Seeder {
 
     // Crear usuarios de prueba
     const usersCount = await this.usersRepository.count();
-    if (usersCount < 6) { // Ahora necesitamos al menos 6 (superadmin, admin, y 4 usuarios normales)
+    if (usersCount < 6) {
+      // Ahora necesitamos al menos 6 (superadmin, admin, y 4 usuarios normales)
       const usersToCreate = 6 - usersCount;
       if (usersToCreate > 0) {
         const users = UserFactory.generateMany(usersToCreate);

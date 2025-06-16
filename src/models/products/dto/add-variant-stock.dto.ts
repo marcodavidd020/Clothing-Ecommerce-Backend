@@ -10,4 +10,4 @@ export class AddVariantStockDto {
   @IsInt()
   @Min(1)
   amount: number;
-} 
+}

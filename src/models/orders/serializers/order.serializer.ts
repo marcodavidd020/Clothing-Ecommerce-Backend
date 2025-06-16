@@ -117,4 +117,4 @@ export class OrderSerializer extends ModelSerializer {
     super(partial);
     Object.assign(this, partial);
   }
-} 
+}

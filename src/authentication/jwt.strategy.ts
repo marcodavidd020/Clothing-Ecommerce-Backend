@@ -38,7 +38,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       roles: payload.roles,
       // Usando el método real de verificación de permisos
       hasPermission: async (permissionName: string) => {
-        return await this.authService.userHasPermission(user.id, permissionName);
+        return await this.authService.userHasPermission(
+          user.id,
+          permissionName,
+        );
       },
     };
   }

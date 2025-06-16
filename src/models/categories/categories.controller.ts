@@ -121,7 +121,8 @@ export class CategoriesController {
 
   @ApiOperation({
     summary: 'Obtener categoría por ID',
-    description: 'Retorna los detalles de una categoría específica por su ID, incluyendo sus productos asociados.',
+    description:
+      'Retorna los detalles de una categoría específica por su ID, incluyendo sus productos asociados.',
   })
   @ApiParam({
     name: 'id',

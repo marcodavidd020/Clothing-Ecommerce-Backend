@@ -1,79 +1,96 @@
 import 'reflect-metadata';
-import { NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { VercelRequest, VercelResponse } from '@vercel/node';
 
-// Import modules from the parent directory
-import { AppModule } from '../dist/app.module';
-import { ValidationPipe as CustomValidationPipe } from '../dist/common/pipes/validation.pipe';
-import { ResponseTransformInterceptor } from '../dist/common/interceptors/response-transform.interceptor';
+// Interface definitions
+interface VercelRequest {
+  method?: string;
+  url?: string;
+  headers: Record<string, string | string[]>;
+  body?: unknown;
+}
 
-let cachedApp: any;
+interface VercelResponse {
+  status(code: number): VercelResponse;
+  setHeader(name: string, value: string): void;
+  json(object: unknown): void;
+  end(): void;
+}
 
-async function bootstrap() {
+let cachedApp: unknown;
+
+async function createNestApp() {
   if (cachedApp) {
     return cachedApp;
   }
 
   try {
+    // Use require for module loading to avoid TS compilation issues
+    const { NestFactory } = require('@nestjs/core');
+    const { SwaggerModule, DocumentBuilder } = require('@nestjs/swagger');
+    
+    // Try to load compiled modules, fallback to source if needed
+    let AppModule;
+    let ValidationPipe;
+    let ResponseTransformInterceptor;
+    
+    try {
+      AppModule = require('../dist/app.module').AppModule;
+      ValidationPipe = require('../dist/common/pipes/validation.pipe').ValidationPipe;
+      ResponseTransformInterceptor = require('../dist/common/interceptors/response-transform.interceptor').ResponseTransformInterceptor;
+    } catch {
+      // Fallback to source files if dist doesn't exist
+      AppModule = require('../src/app.module').AppModule;
+      ValidationPipe = require('../src/common/pipes/validation.pipe').ValidationPipe;
+      ResponseTransformInterceptor = require('../src/common/interceptors/response-transform.interceptor').ResponseTransformInterceptor;
+    }
+
     const app = await NestFactory.create(AppModule);
 
-    // Habilitar CORS para todos los orígenes
+    // Enable CORS
     app.enableCors({
       origin: '*',
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       credentials: true,
     });
 
-    // Configurar prefijo global
+    // Set global prefix
     app.setGlobalPrefix('api');
 
-    // Usar ValidationPipe personalizado
-    app.useGlobalPipes(new CustomValidationPipe());
-
-    // Registrar el interceptor de transformación de respuestas
+    // Set up global pipes and interceptors
+    app.useGlobalPipes(new ValidationPipe());
     app.useGlobalInterceptors(new ResponseTransformInterceptor());
 
-    // Configuración de Swagger
+    // Swagger configuration
     const config = new DocumentBuilder()
       .setTitle('API de Ecommerce')
-      .setDescription(
-        'API completa para la plataforma de ecommerce. Esta API permite gestionar usuarios, productos, categorías, carrito de compras, pedidos y pagos. El sistema incluye autenticación JWT y gestión de roles y permisos.',
-      )
+      .setDescription('API completa para la plataforma de ecommerce')
       .setVersion('1.0')
-      .addBearerAuth(
-        {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-          name: 'Authorization',
-          description: 'Introduce tu token JWT',
-          in: 'header',
-        },
-        'JWT-auth',
-      )
+      .addBearerAuth({
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'Authorization',
+        description: 'Introduce tu token JWT',
+        in: 'header',
+      }, 'JWT-auth')
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api', app, document, {
       customSiteTitle: 'API Ecommerce Documentation',
-      swaggerOptions: {
-        persistAuthorization: true,
-      },
     });
 
     await app.init();
     cachedApp = app;
     return app;
   } catch (error) {
-    console.error('Error during bootstrap:', error);
+    console.error('Error creating NestJS app:', error);
     throw error;
   }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    // Handle preflight requests
+    // Handle CORS preflight
     if (req.method === 'OPTIONS') {
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
@@ -82,18 +99,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    const app = await bootstrap();
-    const server = app.getHttpAdapter().getInstance();
+    const app = await createNestApp();
+    const server = (app as any).getHttpAdapter().getInstance();
     
     return server(req, res);
   } catch (error) {
-    console.error('Error in Vercel handler:', error);
-    res.status(500).json({ 
+    console.error('Handler error:', error);
+    
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    res.status(500).json({
       message: 'Internal Server Error',
-      error: error.message,
+      error: errorMessage,
       timestamp: new Date().toISOString(),
       path: req.url,
-      method: req.method
+      method: req.method,
+      ...(process.env.NODE_ENV === 'development' && { stack: errorStack })
     });
   }
-} 
+}

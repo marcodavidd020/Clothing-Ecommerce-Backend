@@ -23,7 +23,8 @@ export class UpdateOrderDto {
   paymentStatus?: PaymentStatusEnum;
 
   @ApiPropertyOptional({
-    description: 'ID de la transacción de pago (si se actualiza o añade después).',
+    description:
+      'ID de la transacción de pago (si se actualiza o añade después).',
     example: 'pi_abcdef123456',
   })
   @IsOptional()
@@ -32,10 +33,11 @@ export class UpdateOrderDto {
 
   // Otros campos que un administrador podría necesitar actualizar:
   @ApiPropertyOptional({
-    description: 'ID del pago asociado (raro de actualizar, pero posible en casos manuales).',
+    description:
+      'ID del pago asociado (raro de actualizar, pero posible en casos manuales).',
     example: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
   })
   @IsOptional()
   @IsUUID()
   payment_id?: string;
-} 
+}

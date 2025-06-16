@@ -53,7 +53,10 @@ export class ProductVariantsService implements IProductVariantsService {
     id: string,
     variantData: UpdateProductVariantDto,
   ): Promise<ProductVariantSerializer> {
-    const updatedSerializer = await this.variantsRepository.update(id, variantData);
+    const updatedSerializer = await this.variantsRepository.update(
+      id,
+      variantData,
+    );
     if (!updatedSerializer) {
       throw new NotFoundException(
         createNotFoundResponse('Variante de producto'),

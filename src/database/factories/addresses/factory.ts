@@ -78,24 +78,12 @@ export class AddressFactory {
   /**
    * Lista de latitudes de la dirección
    */
-  private static latitude = [
-    -16.5,
-    -16.6,
-    -16.7,
-    -16.8,
-    -16.9,
-  ];
+  private static latitude = [-16.5, -16.6, -16.7, -16.8, -16.9];
 
   /**
    * Lista de longitudes de la dirección
    */
-  private static longitude = [
-    -68.1,
-    -68.2,
-    -68.3,
-    -68.4,
-    -68.5,
-  ];
+  private static longitude = [-68.1, -68.2, -68.3, -68.4, -68.5];
 
   /**
    * Generar una dirección aleatoria
@@ -104,14 +92,11 @@ export class AddressFactory {
     const city = overrideParams.city || this.getRandomElement(this.cities);
     const department = overrideParams.department || this.getStateForCity(city);
     const phoneNumber =
-      overrideParams.phoneNumber ||
-      this.getRandomElement(this.phoneNumbers);
+      overrideParams.phoneNumber || this.getRandomElement(this.phoneNumbers);
     const latitude =
-      overrideParams.latitude ||
-      this.getRandomElement(this.latitude);
+      overrideParams.latitude || this.getRandomElement(this.latitude);
     const longitude =
-      overrideParams.longitude ||
-      this.getRandomElement(this.longitude);
+      overrideParams.longitude || this.getRandomElement(this.longitude);
 
     return {
       id: overrideParams.id, // Permitir ID fijo para tests

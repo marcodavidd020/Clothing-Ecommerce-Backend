@@ -56,7 +56,9 @@ export class Payment {
    */
   initiate(): void {
     if (this.status !== PaymentStatusEnum.PENDING) {
-      throw new Error('Solo se puede iniciar un pago que está en estado PENDIENTE.');
+      throw new Error(
+        'Solo se puede iniciar un pago que está en estado PENDIENTE.',
+      );
     }
     // Lógica adicional para iniciar el pago si es necesario
     // Por ejemplo, cambiar el estado a PROCESANDO si fuera un paso intermedio
@@ -68,13 +70,18 @@ export class Payment {
    * @param transactionId El ID de la transacción del proveedor.
    */
   confirm(transactionId: string): void {
-    if (this.status !== PaymentStatusEnum.PENDING && this.status !== PaymentStatusEnum.PROCESSING) {
+    if (
+      this.status !== PaymentStatusEnum.PENDING &&
+      this.status !== PaymentStatusEnum.PROCESSING
+    ) {
       throw new Error(
         'Solo se puede confirmar un pago que está en estado PENDIENTE o PROCESANDO.',
       );
     }
     if (!transactionId) {
-      throw new Error('Se requiere un ID de transacción para confirmar el pago.');
+      throw new Error(
+        'Se requiere un ID de transacción para confirmar el pago.',
+      );
     }
     this.status = PaymentStatusEnum.PAID;
     this.transactionId = transactionId;
@@ -89,9 +96,7 @@ export class Payment {
       this.status === PaymentStatusEnum.REFUNDED ||
       this.status === PaymentStatusEnum.CANCELLED
     ) {
-      throw new Error(
-        `No se puede cancelar un pago en estado ${this.status}.`,
-      );
+      throw new Error(`No se puede cancelar un pago en estado ${this.status}.`);
     }
     this.status = PaymentStatusEnum.CANCELLED;
   }
@@ -105,7 +110,9 @@ export class Payment {
       this.status === PaymentStatusEnum.REFUNDED ||
       this.status === PaymentStatusEnum.FAILED
     ) {
-      throw new Error(`No se puede marcar como fallido un pago en estado ${this.status}.`);
+      throw new Error(
+        `No se puede marcar como fallido un pago en estado ${this.status}.`,
+      );
     }
     this.status = PaymentStatusEnum.FAILED;
   }

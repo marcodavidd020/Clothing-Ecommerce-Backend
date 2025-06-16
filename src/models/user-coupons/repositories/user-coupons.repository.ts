@@ -8,7 +8,10 @@ import {
   IUserCouponCreate,
   IUserCouponUpdate,
 } from '../interfaces/user-coupon.interface';
-import { IPaginationOptions, IPaginatedResult } from 'src/common/interfaces/pagination.interface';
+import {
+  IPaginationOptions,
+  IPaginatedResult,
+} from 'src/common/interfaces/pagination.interface';
 
 @Injectable()
 export class UserCouponsRepository extends ModelRepository<
@@ -22,30 +25,42 @@ export class UserCouponsRepository extends ModelRepository<
     this.metadata = this.repository.metadata;
   }
 
-  async findById(id: string, relations: string[] = ['user', 'coupon']): Promise<UserCouponSerializer | null> {
+  async findById(
+    id: string,
+    relations: string[] = ['user', 'coupon'],
+  ): Promise<UserCouponSerializer | null> {
     const userCoupon = await this.repository.findOne({
       where: { id, isActive: true },
       relations,
     });
     return userCoupon ? this.transform(userCoupon) : null;
   }
-  
-  async findRawById(id: string, relations: string[] = []): Promise<UserCoupon | null> {
+
+  async findRawById(
+    id: string,
+    relations: string[] = [],
+  ): Promise<UserCoupon | null> {
     return this.repository.findOne({
       where: { id, isActive: true },
       relations,
     });
   }
 
-  async findByUserId(userId: string, relations: string[] = ['coupon']): Promise<UserCouponSerializer[]> {
+  async findByUserId(
+    userId: string,
+    relations: string[] = ['coupon'],
+  ): Promise<UserCouponSerializer[]> {
     const userCoupons = await this.repository.find({
       where: { userId, isActive: true },
       relations,
     });
     return this.transformMany(userCoupons);
   }
-  
-  async findByCouponId(couponId: string, relations: string[] = ['user']): Promise<UserCouponSerializer[]> {
+
+  async findByCouponId(
+    couponId: string,
+    relations: string[] = ['user'],
+  ): Promise<UserCouponSerializer[]> {
     const userCoupons = await this.repository.find({
       where: { couponId, isActive: true },
       relations,
@@ -65,10 +80,12 @@ export class UserCouponsRepository extends ModelRepository<
     return userCoupon ? this.transform(userCoupon) : null;
   }
 
-  async createUserCoupon(data: IUserCouponCreate): Promise<UserCouponSerializer> {
-    const userCouponToCreate = this.repository.create({ 
-        ...data, 
-        isActive: data.isActive === undefined ? true : data.isActive 
+  async createUserCoupon(
+    data: IUserCouponCreate,
+  ): Promise<UserCouponSerializer> {
+    const userCouponToCreate = this.repository.create({
+      ...data,
+      isActive: data.isActive === undefined ? true : data.isActive,
     });
     const newUserCoupon = await this.repository.save(userCouponToCreate);
     // Recargar con relaciones para el serializador
@@ -89,7 +106,10 @@ export class UserCouponsRepository extends ModelRepository<
     return updatedUserCoupon;
   }
 
-  async markAsUsed(id: string, usedAt: Date = new Date()): Promise<UserCouponSerializer | null> {
+  async markAsUsed(
+    id: string,
+    usedAt: Date = new Date(),
+  ): Promise<UserCouponSerializer | null> {
     const userCouponEntity = await this.findRawById(id);
     if (!userCouponEntity) {
       return null;
@@ -105,7 +125,8 @@ export class UserCouponsRepository extends ModelRepository<
     return updatedUserCoupon;
   }
 
-  async deleteUserCoupon(id: string): Promise<boolean> { // Soft delete
+  async deleteUserCoupon(id: string): Promise<boolean> {
+    // Soft delete
     const userCoupon = await this.repository.findOneBy({ id, isActive: true });
     if (!userCoupon) {
       return false;
@@ -113,8 +134,11 @@ export class UserCouponsRepository extends ModelRepository<
     const result = await this.repository.update(id, { isActive: false });
     return result.affected !== undefined && result.affected > 0;
   }
-  
-  async countByCouponAndUser(couponId: string, userId: string): Promise<number> {
+
+  async countByCouponAndUser(
+    couponId: string,
+    userId: string,
+  ): Promise<number> {
     return this.repository.count({
       where: { couponId, userId, isActive: true, usedAt: IsNull() }, // Contar solo los no usados o según la lógica de negocio
     });
@@ -122,7 +146,7 @@ export class UserCouponsRepository extends ModelRepository<
 
   async countByCouponId(couponId: string): Promise<number> {
     return this.repository.count({
-        where: { couponId, isActive: true, usedAt: IsNull() } // Contar solo los no usados o los que se hayan usado (depende de si maxUses es por asignación o por uso)
+      where: { couponId, isActive: true, usedAt: IsNull() }, // Contar solo los no usados o los que se hayan usado (depende de si maxUses es por asignación o por uso)
     });
   }
 
@@ -137,11 +161,17 @@ export class UserCouponsRepository extends ModelRepository<
     options: IPaginationOptions = {},
     relations: string[] = ['coupon'],
   ): Promise<IPaginatedResult<UserCouponSerializer>> {
-    const defaultWhere: FindOptionsWhere<UserCoupon> = { userId, isActive: true };
+    const defaultWhere: FindOptionsWhere<UserCoupon> = {
+      userId,
+      isActive: true,
+    };
     return super.paginate(options, relations, defaultWhere);
   }
 
-  async findActiveUserCouponByCouponCodeForUser(userId: string, couponCode: string): Promise<UserCoupon | null> {
+  async findActiveUserCouponByCouponCodeForUser(
+    userId: string,
+    couponCode: string,
+  ): Promise<UserCoupon | null> {
     return this.repository.findOne({
       where: {
         userId,
@@ -152,4 +182,4 @@ export class UserCouponsRepository extends ModelRepository<
       relations: ['coupon'], // Cargar el cupón para verificar expiresAt, etc.
     });
   }
-} 
+}

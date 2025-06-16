@@ -303,7 +303,7 @@ export class ProductsService implements IProductsService {
         transactionalEntityManager.getRepository(ProductVariant);
       const imageRepo = transactionalEntityManager.getRepository(ProductImage);
 
-      let product = await productRepo.findOne({
+      const product = await productRepo.findOne({
         where: { id, isActive: true },
         relations: ['categories', 'variants', 'images'],
       });

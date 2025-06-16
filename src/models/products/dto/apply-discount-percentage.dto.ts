@@ -12,4 +12,4 @@ export class ApplyDiscountPercentageDto {
   @Min(0)
   @Max(1)
   percentage: number;
-} 
+}

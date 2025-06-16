@@ -29,7 +29,10 @@ export class UpdateCategoryDto extends PartialType(CreateCategoryDto) {
     nullable: true,
   })
   @IsOptional()
-  @IsUrl({}, { message: 'La imagen debe ser una URL válida si se proporciona.' })
+  @IsUrl(
+    {},
+    { message: 'La imagen debe ser una URL válida si se proporciona.' },
+  )
   @IsString({ message: 'La URL de la imagen debe ser una cadena de texto.' })
   image?: string | null;
 }

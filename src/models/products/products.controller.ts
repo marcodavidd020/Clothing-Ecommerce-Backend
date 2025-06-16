@@ -170,7 +170,8 @@ export class ProductsController {
   @Get('best-sellers/by-category/:categoryId')
   @RequirePermissions(ProductPermissionsEnum.PRODUCT_VIEW)
   @ApiOperation({
-    summary: 'Obtener los productos más vendidos de una categoría y todas sus subcategorías',
+    summary:
+      'Obtener los productos más vendidos de una categoría y todas sus subcategorías',
   })
   @ApiParam({
     name: 'categoryId',
@@ -185,7 +186,8 @@ export class ProductsController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Lista de productos más vendidos de la categoría y sus subcategorías',
+    description:
+      'Lista de productos más vendidos de la categoría y sus subcategorías',
     type: ProductSerializer,
     isArray: true,
   })
@@ -200,7 +202,8 @@ export class ProductsController {
   @Get('newest/by-category/:categoryId')
   @RequirePermissions(ProductPermissionsEnum.PRODUCT_VIEW)
   @ApiOperation({
-    summary: 'Obtener los productos más recientes de una categoría y todas sus subcategorías',
+    summary:
+      'Obtener los productos más recientes de una categoría y todas sus subcategorías',
   })
   @ApiParam({
     name: 'categoryId',
@@ -215,7 +218,8 @@ export class ProductsController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Lista de productos más recientes de la categoría y sus subcategorías',
+    description:
+      'Lista de productos más recientes de la categoría y sus subcategorías',
     type: ProductSerializer,
     isArray: true,
   })

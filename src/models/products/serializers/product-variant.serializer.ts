@@ -5,7 +5,10 @@ import { ProductSerializer } from './product.serializer';
 
 export class ProductVariantSerializer extends ModelSerializer {
   @Expose()
-  @ApiProperty({ description: 'ID único de la variante', example: '550e8400-e29b-41d4-a716-446655440000' })
+  @ApiProperty({
+    description: 'ID único de la variante',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
   declare id: string;
 
   @Expose()
@@ -17,11 +20,17 @@ export class ProductVariantSerializer extends ModelSerializer {
   size: string;
 
   @Expose()
-  @ApiProperty({ description: 'Cantidad en stock de esta variante', example: 25 })
+  @ApiProperty({
+    description: 'Cantidad en stock de esta variante',
+    example: 25,
+  })
   stock: number;
 
   @Expose()
-  @ApiProperty({ description: 'ID del producto al que pertenece esta variante', example: '550e8400-e29b-41d4-a716-446655440000' })
+  @ApiProperty({
+    description: 'ID del producto al que pertenece esta variante',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
   productId: string;
 
   @Expose()

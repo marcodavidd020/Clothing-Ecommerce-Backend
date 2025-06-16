@@ -1,4 +1,4 @@
-import { Permission } from "src/common/constants/permissions.enum";
+import { Permission } from 'src/common/constants/permissions.enum';
 
 /**
  * Permisos relacionados con usuarios

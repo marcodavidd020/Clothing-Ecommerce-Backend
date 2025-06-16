@@ -328,9 +328,10 @@ export class OrdersService {
       // Reversión de stock
       for (const item of order.items) {
         if (item.product_variant_id) {
-          const variantEntity = await this.productVariantsRepository.findRawById(
-            item.product_variant_id,
-          );
+          const variantEntity =
+            await this.productVariantsRepository.findRawById(
+              item.product_variant_id,
+            );
           if (variantEntity) {
             variantEntity.addStock(item.quantity);
             await queryRunner.manager.save(ProductVariant, variantEntity);

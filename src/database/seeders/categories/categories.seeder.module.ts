@@ -5,12 +5,7 @@ import { Category } from '../../../models/categories/entities/category.entity'; 
 import { Product } from '../../../models/products/entities/product.entity'; // Importar Product para la relación
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Category,
-      Product,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([Category, Product])],
   providers: [CategoriesSeederService],
   exports: [CategoriesSeederService],
 })

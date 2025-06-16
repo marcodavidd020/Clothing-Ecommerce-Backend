@@ -47,7 +47,9 @@ export class CategorySerializer extends ModelSerializer {
     type: Boolean,
   })
   @Expose()
-  @Transform(({ obj }) => Array.isArray(obj.children) && obj.children.length > 0)
+  @Transform(
+    ({ obj }) => Array.isArray(obj.children) && obj.children.length > 0,
+  )
   hasChildren: boolean;
 
   @ApiProperty({

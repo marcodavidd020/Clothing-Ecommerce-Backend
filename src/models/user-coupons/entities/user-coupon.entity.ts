@@ -25,7 +25,9 @@ export class UserCoupon {
   @Column({ name: 'coupon_id' })
   couponId: string;
 
-  @ManyToOne(() => Coupon, (coupon) => coupon.userCoupons, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Coupon, (coupon) => coupon.userCoupons, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'coupon_id' })
   coupon: Coupon;
 
@@ -50,4 +52,4 @@ export class UserCoupon {
     }
     this.usedAt = new Date();
   }
-} 
+}

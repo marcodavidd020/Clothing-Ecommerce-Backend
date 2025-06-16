@@ -41,7 +41,7 @@ export class CategoriesService {
       'parent',
       'children',
     ]);
-    return paginatedResult as IPaginatedResult<CategorySerializer>;
+    return paginatedResult;
   }
 
   /**
@@ -248,7 +248,8 @@ export class CategoriesService {
   ): CategorySerializer[] {
     return categories.map((category) => {
       // Calculamos hasChildren en base a la presencia de hijos
-      const hasChildren = Array.isArray(category.children) && category.children.length > 0;
+      const hasChildren =
+        Array.isArray(category.children) && category.children.length > 0;
       category.hasChildren = hasChildren;
 
       // Si tiene hijos, procesamos recursivamente
@@ -263,9 +264,8 @@ export class CategoriesService {
   /**
    * Ayudante para enriquecer una categoría individual con atributos adicionales
    */
-  private enhanceCategoryWithAttributes(
-    category: CategorySerializer,
-  ): void {
-    category.hasChildren = Array.isArray(category.children) && category.children.length > 0;
+  private enhanceCategoryWithAttributes(category: CategorySerializer): void {
+    category.hasChildren =
+      Array.isArray(category.children) && category.children.length > 0;
   }
 }

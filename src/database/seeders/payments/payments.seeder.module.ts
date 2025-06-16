@@ -6,11 +6,7 @@ import { PaymentsSeederService } from './payments.seeder.service';
 // import { User } from '../../../models/users/entities/user.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Payment,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([Payment])],
   providers: [PaymentsSeederService],
   exports: [PaymentsSeederService],
 })

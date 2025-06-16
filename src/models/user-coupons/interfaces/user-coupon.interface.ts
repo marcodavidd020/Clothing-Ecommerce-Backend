@@ -21,7 +21,7 @@ export interface IUserCouponUpdate {
 }
 
 export interface IMarkUserCouponAsUsedDto {
-    // No necesita campos si la lógica está en el servicio y usa el ID de la URL
-    // Opcionalmente, podría llevar la fecha si se permite especificarla externamente.
-    // usedAt?: Date;
-} 
+  // No necesita campos si la lógica está en el servicio y usa el ID de la URL
+  // Opcionalmente, podría llevar la fecha si se permite especificarla externamente.
+  // usedAt?: Date;
+}

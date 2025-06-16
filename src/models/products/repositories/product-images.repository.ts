@@ -50,7 +50,10 @@ export class ProductImagesRepository extends ModelRepository<
   }
 
   async deactivateByProductId(productId: string): Promise<boolean> {
-    const result = await this.repository.update({ productId }, { isActive: false });
+    const result = await this.repository.update(
+      { productId },
+      { isActive: false },
+    );
     return result.affected ? result.affected > 0 : false;
   }
 

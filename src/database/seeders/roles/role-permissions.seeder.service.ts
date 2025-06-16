@@ -6,7 +6,10 @@ import { Permission } from '../../../models/permissions/entities/permission.enti
 import { RolePermission } from '../../../models/permissions/entities/role-permission.entity';
 import { Seeder } from '../seeder.interface';
 import { ProductPermissionsEnum } from 'src/models/products/constants/product-permissions.constant';
-import { USER_TYPES, DEFAULT_ACCESS_ROLES } from 'src/common/constants/settings';
+import {
+  USER_TYPES,
+  DEFAULT_ACCESS_ROLES,
+} from 'src/common/constants/settings';
 import { CategoryPermissionsEnum } from 'src/models/categories/constants/categorie-permissions';
 import { UserPermissionsEnum } from 'src/models/users/constants/user-permissions';
 import { RolePermissionsEnum } from 'src/models/roles/constants/role-permissions';
@@ -42,7 +45,9 @@ export class RolePermissionsSeeder implements Seeder {
     const adminRole = await this.rolesRepository.findOne({
       where: { slug: USER_TYPES.ADMIN },
     });
-    const userRole = await this.rolesRepository.findOne({ where: { slug: USER_TYPES.USER } });
+    const userRole = await this.rolesRepository.findOne({
+      where: { slug: USER_TYPES.USER },
+    });
     const managerRole = await this.rolesRepository.findOne({
       where: { slug: USER_TYPES.MANAGER },
     });
@@ -50,7 +55,13 @@ export class RolePermissionsSeeder implements Seeder {
       where: { slug: USER_TYPES.CLIENT },
     });
 
-    if (!superAdminRole || !adminRole || !userRole || !managerRole || !clientRole) {
+    if (
+      !superAdminRole ||
+      !adminRole ||
+      !userRole ||
+      !managerRole ||
+      !clientRole
+    ) {
       console.log(
         'No se encontraron los roles necesarios para asignar permisos',
       );
@@ -77,7 +88,9 @@ export class RolePermissionsSeeder implements Seeder {
 
     // Asignar permisos básicos al rol de usuario
     const userPermissions = allPermissions
-      .filter((permission) => permission.name.startsWith(UserPermissionsEnum.VIEW))
+      .filter((permission) =>
+        permission.name.startsWith(UserPermissionsEnum.VIEW),
+      )
       .map((permission) => {
         const rolePermission = new RolePermission();
         rolePermission.role = userRole;
@@ -141,9 +154,12 @@ export class RolePermissionsSeeder implements Seeder {
   /**
    * Crear o obtener un rol
    */
-  private async createOrGetRole(slug: string, name: string): Promise<Role | null> {
+  private async createOrGetRole(
+    slug: string,
+    name: string,
+  ): Promise<Role | null> {
     const existingRole = await this.rolesRepository.findOne({
-      where: { slug }
+      where: { slug },
     });
 
     if (existingRole) {
@@ -153,7 +169,7 @@ export class RolePermissionsSeeder implements Seeder {
     try {
       const newRole = this.rolesRepository.create({
         slug,
-        name
+        name,
       });
       return await this.rolesRepository.save(newRole);
     } catch (error) {

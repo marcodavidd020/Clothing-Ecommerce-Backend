@@ -23,12 +23,18 @@ export class ProductVariantsRepository extends ModelRepository<
   }
 
   async findById(id: string): Promise<ProductVariantSerializer | null> {
-    const entity = await this.repository.findOne({ where: { id, isActive: true } });
+    const entity = await this.repository.findOne({
+      where: { id, isActive: true },
+    });
     return entity ? this.transform(entity) : null;
   }
 
-  async findByProductId(productId: string): Promise<ProductVariantSerializer[]> {
-    const entities = await this.repository.find({ where: { productId, isActive: true } });
+  async findByProductId(
+    productId: string,
+  ): Promise<ProductVariantSerializer[]> {
+    const entities = await this.repository.find({
+      where: { productId, isActive: true },
+    });
     return this.transformMany(entities);
   }
 
@@ -46,7 +52,9 @@ export class ProductVariantsRepository extends ModelRepository<
     data: UpdateProductVariantDto,
   ): Promise<ProductVariantSerializer | null> {
     await this.repository.update(id, data);
-    const updatedEntity = await this.repository.findOne({ where: { id, isActive: true } });
+    const updatedEntity = await this.repository.findOne({
+      where: { id, isActive: true },
+    });
     return updatedEntity ? this.transform(updatedEntity) : null;
   }
 
