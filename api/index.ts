@@ -29,10 +29,10 @@ async function createNestApp() {
     const { NestFactory } = require('@nestjs/core');
     const { SwaggerModule, DocumentBuilder } = require('@nestjs/swagger');
     
-    // Load compiled modules from dist
-    const AppModule = require('../dist/app.module').AppModule;
-    const ValidationPipe = require('../dist/common/pipes/validation.pipe').ValidationPipe;
-    const ResponseTransformInterceptor = require('../dist/common/interceptors/response-transform.interceptor').ResponseTransformInterceptor;
+    // Load compiled modules from dist/src
+    const AppModule = require('../dist/src/app.module').AppModule;
+    const ValidationPipe = require('../dist/src/common/pipes/validation.pipe').ValidationPipe;
+    const ResponseTransformInterceptor = require('../dist/src/common/interceptors/response-transform.interceptor').ResponseTransformInterceptor;
 
     const app = await NestFactory.create(AppModule);
 
