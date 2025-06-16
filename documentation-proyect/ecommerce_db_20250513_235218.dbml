@@ -1,0 +1,180 @@
+
+Project ecommerce_db {
+  database_type: "PostgreSQL"
+}
+
+Table users {
+  id UUID [pk]
+  email varchar [unique, not null]
+  password varchar [not null]
+  name varchar
+  phone varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table roles {
+  id UUID [pk]
+  name varchar
+  slug varchar [unique]
+}
+
+Table permissions {
+  id UUID [pk]
+  name varchar
+  description text
+}
+
+Table user_roles {
+  id UUID [pk]
+  user_id UUID [ref: > users.id]
+  role_id UUID [ref: > roles.id]
+  assigned_at timestamp
+}
+
+Table role_permissions {
+  id UUID [pk]
+  role_id UUID [ref: > roles.id]
+  permission_id UUID [ref: > permissions.id]
+  granted_at timestamp
+}
+
+Table addresses {
+  id UUID [pk]
+  user_id UUID [ref: > users.id]
+  full_name varchar
+  phone varchar
+  street varchar
+  city varchar
+  postal_code varchar
+  country varchar
+  latitude decimal
+  longitude decimal
+  is_default boolean
+}
+
+Table categories {
+  id UUID [pk]
+  name varchar
+  slug varchar
+  parent_category_id UUID [ref: > categories.id, null]
+}
+
+Table products {
+  id UUID [pk]
+  name varchar
+  slug varchar [unique]
+  description text
+  price decimal
+  discount_price decimal
+  stock integer
+  category_id UUID [ref: > categories.id]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table product_variants {
+  id UUID [pk]
+  product_id UUID [ref: > products.id]
+  color varchar
+  size varchar
+  stock integer
+}
+
+Table product_images {
+  id UUID [pk]
+  product_id UUID [ref: > products.id]
+  url text
+  alt text
+}
+
+Table reviews {
+  id UUID [pk]
+  user_id UUID [ref: > users.id]
+  product_id UUID [ref: > products.id]
+  rating integer
+  comment text
+  created_at timestamp
+}
+
+Table carts {
+  id UUID [pk]
+  user_id UUID [ref: > users.id, unique]
+}
+
+Table cart_items {
+  id UUID [pk]
+  cart_id UUID [ref: > carts.id]
+  product_variant_id UUID [ref: > product_variants.id]
+  quantity integer
+}
+
+Table orders {
+  id UUID [pk]
+  user_id UUID [ref: > users.id]
+  address_id UUID [ref: > addresses.id]
+  payment_id UUID [ref: > payments.id]
+  coupon_id UUID [ref: > coupons.id, null]
+  total_amount decimal
+  status varchar
+  payment_status varchar
+  payment_method varchar
+  created_at timestamp
+}
+
+Table order_items {
+  id UUID [pk]
+  order_id UUID [ref: > orders.id]
+  product_variant_id UUID [ref: > product_variants.id]
+  quantity integer
+  price decimal
+}
+
+Table payments {
+  id UUID [pk]
+  provider varchar
+  method varchar
+  status varchar
+  transaction_id varchar
+  amount decimal
+  created_at timestamp
+}
+
+Table coupons {
+  id UUID [pk]
+  code varchar [unique]
+  discount_type varchar
+  discount_value decimal
+  min_amount decimal
+  max_uses integer
+  expires_at timestamp
+}
+
+Table user_coupons {
+  id UUID [pk]
+  user_id UUID [ref: > users.id]
+  coupon_id UUID [ref: > coupons.id]
+  used_at timestamp
+}
+
+Table notifications {
+  id UUID [pk]
+  user_id UUID [ref: > users.id]
+  type varchar
+  message text
+  read boolean
+  created_at timestamp
+}
+
+Table product_discounts {
+  id UUID [pk]
+  discount_value decimal
+  start_date date
+  end_date date
+}
+
+Table product_discount_associations {
+  id UUID [pk]
+  product_id UUID [ref: > products.id]
+  product_discount_id UUID [ref: > product_discounts.id]
+}
