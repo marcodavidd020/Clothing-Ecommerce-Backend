@@ -482,3 +482,92 @@ classDiagram
     OrderItem --> Review : can review
 
 ```
+
+## 🚀 Deployment
+
+### Vercel Deployment (Recommended)
+
+#### 1. Prepare your repository
+```bash
+# Ensure your code is committed and pushed to GitHub
+git add .
+git commit -m "feat: prepare for Vercel deployment"
+git push origin main
+```
+
+#### 2. Deploy to Vercel
+
+1. **Connect to Vercel**: Go to [vercel.com](https://vercel.com) and import your GitHub repository
+2. **Configure Environment Variables**: In your Vercel dashboard, add these environment variables:
+
+```bash
+NODE_ENV=production
+API_PREFIX=api
+DB_HOST=your-database-host
+DB_PORT=5432
+DB_USERNAME=your-username
+DB_PASSWORD=your-password
+DB_NAME=your-database-name
+DB_SSL=true
+JWT_SECRET=your-super-secret-jwt-key
+JWT_EXPIRES_IN=7d
+CORS_ORIGIN=*
+SWAGGER_ENABLED=true
+```
+
+3. **Deploy**: Vercel will automatically detect the `vercel-build` script and deploy your API
+
+#### 3. Access your API
+- **API Base URL**: `https://your-app.vercel.app/api`
+- **Swagger Documentation**: `https://your-app.vercel.app/api` (Swagger UI)
+- **Health Check**: `https://your-app.vercel.app/api/health`
+
+### Docker Production
+
+```bash
+# Build and run production containers
+npm run docker:prod
+
+# Check logs
+docker-compose -f docker-compose.prod.yml logs -f
+
+# Stop production containers
+docker-compose -f docker-compose.prod.yml down
+```
+
+### Manual Deployment
+
+```bash
+# Build the application
+npm run build
+
+# Run migrations
+npm run migration:run
+
+# Start production server
+npm run start:prod
+```
+
+## 🔧 Troubleshooting
+
+### Common Vercel Issues
+
+1. **404 Error**: Make sure your `vercel.json` routes are correctly configured
+2. **Build Failures**: Check that all dependencies are listed in `package.json`
+3. **Environment Variables**: Ensure all required env vars are set in Vercel dashboard
+4. **Database Connection**: Use SSL-enabled database URLs for production
+
+### API Testing
+
+```bash
+# Test API health
+curl https://your-app.vercel.app/api/health
+
+# Test Swagger
+curl https://your-app.vercel.app/api
+
+# Test authentication
+curl -X POST https://your-app.vercel.app/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password"}'
+```

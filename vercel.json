@@ -1,28 +1,24 @@
 {
-    "version": 2,
-    "name": "ecommerce-api",
-    "builds": [
-      {
-        "src": "dist/main.js",
-        "use": "@vercel/node",
-        "config": {
-          "includeFiles": [
-            "dist/**",
-            "node_modules/**",
-            "package.json"
-          ]
-        }
-      }
-    ],
-    "rewrites": [
-      {
-        "source": "/(.*)",
-        "destination": "/dist/main.js"
-      }
-    ],
-    "env": {
-      "NODE_ENV": "production"
+  "version": 2,
+  "name": "ecommerce-api",
+  "builds": [
+    {
+      "src": "dist/main.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/dist/main.js"
     },
-    "regions": ["iad1"]
+    {
+      "src": "/(.*)",
+      "dest": "/dist/main.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
   }
+}
   

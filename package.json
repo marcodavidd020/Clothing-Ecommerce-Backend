@@ -36,7 +36,7 @@
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
     "docker:clean": "docker-compose down -v --remove-orphans && docker system prune -f",
-    "vercel:build": "./scripts/vercel-build.sh",
+    "vercel-build": "./scripts/vercel-build.sh",
     "db:setup": "npm run migration:run && npm run seed",
     "db:refresh": "npm run migration:revert && npm run migration:run && npm run seed",
     "health": "curl -f http://localhost:3000/health || exit 1"
