@@ -11,6 +11,7 @@ import { CategoryPermissionsEnum } from 'src/models/categories/constants/categor
 import { UserPermissionsEnum } from 'src/models/users/constants/user-permissions';
 import { RolePermissionsEnum } from 'src/models/roles/constants/role-permissions';
 import { PermissionPermissionsEnum } from 'src/models/permissions/constants/permission-permissions';
+import { OrderPermissionsEnum } from 'src/models/orders/constants/order-permissions';
 
 @Injectable()
 export class RolePermissionsSeeder implements Seeder {
@@ -99,12 +100,24 @@ export class RolePermissionsSeeder implements Seeder {
         return rolePermission;
       });
 
-    // Asignar permisos de visualización de productos y categorías al rol de cliente
+    // Asignar permisos de ecommerce al rol de cliente (productos, categorías, órdenes, carrito)
     const clientPermissions = allPermissions
       .filter(
         (permission) =>
+          // Permisos de productos y categorías (ya existentes)
           permission.name.startsWith(ProductPermissionsEnum.PRODUCT_VIEW) ||
-          permission.name.startsWith(CategoryPermissionsEnum.VIEW),
+          permission.name.startsWith(CategoryPermissionsEnum.VIEW) ||
+          // Permisos de órdenes propias
+          permission.name === OrderPermissionsEnum.CREATE_OWN ||
+          permission.name === OrderPermissionsEnum.VIEW_OWN ||
+          permission.name === OrderPermissionsEnum.CANCEL_OWN ||
+          // Permisos de carrito (si existen)
+          permission.name.includes('cart') ||
+          // Permisos de cupones propios
+          permission.name.includes('view_own:user_coupons') ||
+          // Permisos de reseñas propias
+          permission.name.includes('create_own:reviews') ||
+          permission.name.includes('view_own:reviews'),
       )
       .map((permission) => {
         const rolePermission = new RolePermission();
