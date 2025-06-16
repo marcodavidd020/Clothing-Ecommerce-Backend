@@ -1,24 +1,25 @@
 {
   "version": 2,
-  "name": "ecommerce-api",
   "builds": [
     {
-      "src": "dist/main.js",
+      "src": "api/index.ts",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/dist/main.js"
+      "dest": "/api"
     },
     {
       "src": "/(.*)",
-      "dest": "/dist/main.js"
+      "dest": "/api"
     }
   ],
-  "env": {
-    "NODE_ENV": "production"
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 30
+    }
   }
 }
   

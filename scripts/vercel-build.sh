@@ -6,21 +6,20 @@ echo "🚀 Starting Vercel build process..."
 echo "📦 Installing dependencies..."
 npm ci
 
-# Build the application
-echo "🔨 Building application..."
+# Build the main application first
+echo "🔨 Building NestJS application..."
 npm run build
 
-# Copy package.json to dist for proper dependency resolution
-cp package.json dist/
+# Install production dependencies in API folder
+echo "📁 Setting up API directory..."
+cd api && npm init -y
 
-# Create a simple package.json in dist with only runtime dependencies
-echo "📝 Creating production package.json..."
-cat > dist/package.json << EOL
+# Create a minimal package.json for the API
+cat > package.json << EOL
 {
-  "name": "ecommerce-api-vercel",
+  "name": "ecommerce-api-serverless",
   "version": "1.0.0",
-  "main": "main.js",
-  "type": "commonjs",
+  "main": "index.ts",
   "dependencies": {
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
@@ -45,8 +44,12 @@ cat > dist/package.json << EOL
 }
 EOL
 
+cd ..
+
 echo "✅ Vercel build completed successfully!"
 
-# Show dist contents for debugging
-echo "📁 Contents of dist directory:"
-ls -la dist/
+# Show structure for debugging
+echo "📁 Project structure:"
+ls -la
+echo "📁 API directory:"
+ls -la api/

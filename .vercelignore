@@ -1,5 +1,4 @@
- # Development files
-src/
+# Test files
 test/
 *.spec.ts
 *.test.ts
@@ -10,12 +9,11 @@ documentation-proyect/
 *.md
 !README.md
 
-# Config files
+# Config files (keep tsconfig for build)
 .eslintrc*
 .prettierrc
 eslint.config.*
 jest.config.*
-tsconfig*.json
 nest-cli.json
 compodoc.json
 
@@ -52,3 +50,11 @@ coverage/
 # OS
 .DS_Store
 Thumbs.db
+
+# Development scripts
+scripts/dev.sh
+scripts/prod.sh
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
