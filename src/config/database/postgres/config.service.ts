@@ -82,6 +82,14 @@ export class PostgresConfigService {
     return this.configService.get<number>('postgres.connectionTimeout')!;
   }
 
+  get idleTimeoutMillis(): number {
+    return this.configService.get<number>('postgres.idleTimeoutMillis')!;
+  }
+
+  get acquireTimeoutMillis(): number {
+    return this.configService.get<number>('postgres.acquireTimeoutMillis')!;
+  }
+
   getTypeOrmConfig(): TypeOrmModuleOptions {
     return {
       type: 'postgres',
@@ -98,6 +106,14 @@ export class PostgresConfigService {
       extra: {
         max: this.maxConnections,
         connectionTimeoutMillis: this.connectionTimeout,
+        idleTimeoutMillis: this.idleTimeoutMillis,
+        acquireTimeoutMillis: this.acquireTimeoutMillis,
+        // Close connections that have been idle for more than specified time
+        evictionRunIntervalMillis: 30000,
+        // Test connections before using them
+        testOnBorrow: true,
+        // Validate connections when returning to pool
+        testOnReturn: true,
       },
     };
   }
