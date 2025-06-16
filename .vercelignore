@@ -3,18 +3,17 @@ test/
 *.spec.ts
 *.test.ts
 
-# Documentation
+# Documentation (but keep documentation folder that might be needed)
 docs/
 documentation-proyect/
 *.md
 !README.md
 
-# Config files (keep tsconfig for build)
+# Config files (keep necessary ones for build)
 .eslintrc*
 .prettierrc
 eslint.config.*
 jest.config.*
-nest-cli.json
 compodoc.json
 
 # Git
@@ -58,3 +57,11 @@ scripts/prod.sh
 # Docker files
 Dockerfile*
 docker-compose*.yml
+
+# Don't ignore public directory or necessary build files
+!public/
+!dist/
+!api/
+!src/
+!nest-cli.json
+!tsconfig*.json
