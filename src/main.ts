@@ -17,7 +17,7 @@ async function bootstrap() {
 
   const appConfig = app.get(AppConfigService);
 
-  const port = appConfig.port;
+  const port = process.env.PORT || appConfig.port || 3000;
   const globalPrefix = appConfig.apiPrefix;
 
   app.setGlobalPrefix(globalPrefix);
@@ -51,10 +51,35 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(port);
+  // Solo escuchar en el puerto si no estamos en Vercel
+  if (process.env.VERCEL !== '1') {
+    await app.listen(port);
+    console.log(
+      `Application is running on: http://localhost:${port}/${globalPrefix}`,
+    );
+  }
 
-  console.log(
-    `Application is running on: http://localhost:${port}/${globalPrefix}`,
-  );
+  return app;
 }
-bootstrap();
+
+// Para Vercel, exportamos la app inicializada
+let cachedApp: any;
+
+async function getApp() {
+  if (!cachedApp) {
+    cachedApp = await bootstrap();
+  }
+  return cachedApp;
+}
+
+// Export para Vercel
+export default async function handler(req: any, res: any) {
+  const app = await getApp();
+  const server = app.getHttpAdapter().getInstance();
+  return server(req, res);
+}
+
+// Bootstrap normal para desarrollo local
+if (process.env.VERCEL !== '1') {
+  bootstrap();
+}
