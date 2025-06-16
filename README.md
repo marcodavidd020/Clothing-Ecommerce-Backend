@@ -47,7 +47,7 @@ La estructura está inspirada en el artículo [Best Way to Structure Your Direct
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/tu-usuario/nestjs-base-structure.git
+git clone https://github.com/marcodavidd020/Clothing-Ecommerce-Backend.git
 cd nestjs-base-structure
 
 # Instalar dependencias
@@ -251,4 +251,234 @@ const credentials = {
   },
   "timestamp": "2023-10-27T12:00:00.000Z"
 }
+```
+
+## 🏗️ System Architecture
+
+```mermaid
+classDiagram
+    %% Main Entities
+    class User {
+        +UUID id
+        +string email
+        +string password
+        +string name
+        +string phone
+        +Date createdAt
+        +Date updatedAt
+        +register()
+        +login()
+        +updateProfile()
+        +changePassword()
+        +addAddress()
+        +viewOrders()
+    }
+
+    class Role {
+        +UUID id
+        +string name
+        +string slug
+        +assignToUser(userId)
+        +removeFromUser(userId)
+    }
+
+    class Permission {
+        +UUID id
+        +string name
+        +string description
+        +grantToRole(roleId)
+        +revokeFromRole(roleId)
+    }
+
+    class Address {
+        +UUID id
+        +string fullName
+        +string phone
+        +string street
+        +string city
+        +string postalCode
+        +string country
+        +number latitude
+        +number longitude
+        +boolean isDefault
+        +setDefault()
+        +updateAddress()
+        +validateCoordinates()
+    }
+
+    class Category {
+        +UUID id
+        +string name
+        +string slug
+        +create()
+        +update()
+        +assignParentCategory()
+    }
+
+    class Product {
+        +UUID id
+        +string name
+        +string slug
+        +string description
+        +number price
+        +number discountPrice
+        +number stock
+        +Date createdAt
+        +Date updatedAt
+        +create()
+        +update()
+        +delete()
+        +applyDiscount()
+        +removeDiscount()
+        +changeStock()
+    }
+
+    class ProductVariant {
+        +UUID id
+        +string color
+        +string size
+        +number stock
+        +addStock()
+        +removeStock()
+        +updateDetails()
+    }
+
+    class ProductImage {
+        +UUID id
+        +string url
+        +string alt
+        +upload()
+        +delete()
+        +setAsPrimary()
+    }
+
+    class Review {
+        +UUID id
+        +number rating
+        +string comment
+        +Date createdAt
+        +Date updatedAt
+        +add()
+        +update()
+        +delete()
+        +markUpdated()
+    }
+
+    class Cart {
+        +UUID id
+        +clear()
+        +getTotal()
+        +addItem(variantId, quantity)
+        +removeItem(itemId)
+        +updateItem(itemId, quantity)
+    }
+
+    class CartItem {
+        +UUID id
+        +number quantity
+        +updateQuantity()
+        +remove()
+    }
+
+    class Order {
+        +UUID id
+        +number totalAmount
+        +string status
+        +string paymentStatus
+        +string paymentMethod
+        +Date createdAt
+        +place()
+        +cancel()
+        +getSummary()
+        +updateStatus()
+    }
+
+    class OrderItem {
+        +UUID id
+        +number quantity
+        +number price
+        +calculateSubtotal()
+    }
+
+    class Payment {
+        +UUID id
+        +string provider
+        +string method
+        +string status
+        +string transactionId
+        +number amount
+        +Date createdAt
+        +initiate()
+        +confirm()
+        +cancel()
+        +refund()
+        +isSuccessful()
+        +getReceipt()
+    }
+
+    class Coupon {
+        +UUID id
+        +string code
+        +string discountType
+        +number discountValue
+        +number minAmount
+        +number maxUses
+        +Date expiresAt
+        +validate()
+        +applyToOrder(order)
+        +isExpired()
+    }
+
+    class Notification {
+        +UUID id
+        +string type
+        +string message
+        +boolean read
+        +Date createdAt
+        +markAsRead()
+        +send()
+    }
+
+    %% Association Classes
+    class UserRole {
+        +UUID id
+        +Date assignedAt
+    }
+
+    class RolePermission {
+        +UUID id
+        +Date grantedAt
+    }
+
+    class UserCoupon {
+        +UUID id
+        +Date usedAt
+        +markAsUsed()
+    }
+
+    %% Relationships - corrected for classDiagram syntax
+    User --> Address : owns
+    User --> Cart : has
+    User --> Review : writes
+    User --> Notification : receives
+    User --> Order : places
+    User --> Role : has roles
+    Role --> Permission : has permissions
+    User --> Coupon : uses
+
+    Cart --> CartItem : contains
+    Product --> ProductVariant : has variants
+    Product --> ProductImage : has images
+    Product --> Review : has reviews
+    Product --> Category : belongs to
+
+    Order --> OrderItem : contains
+    Order --> Address : shipped to
+    Order --> Payment : paid with
+    Order --> Coupon : applied coupon
+
+    CartItem --> ProductVariant : references
+    OrderItem --> ProductVariant : references
+    OrderItem --> Review : can review
+
 ```

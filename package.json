@@ -28,7 +28,18 @@
     "db:reset": "ts-node -r tsconfig-paths/register src/database/reset.ts",
     "compodoc:gen": "compodoc -c compodoc.json -d docs --disableCoverage",
     "compodoc:serve": "compodoc -c compodoc.json -s -d docs --disableCoverage",
-    "compodoc:watch": "compodoc -c compodoc.json -s -w -d docs --disableCoverage"
+    "compodoc:watch": "compodoc -c compodoc.json -s -w -d docs --disableCoverage",
+    "docker:dev": "./scripts/dev.sh",
+    "docker:prod": "./scripts/prod.sh",
+    "docker:build": "docker build -t ecommerce-api .",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:clean": "docker-compose down -v --remove-orphans && docker system prune -f",
+    "vercel:build": "./scripts/vercel-build.sh",
+    "db:setup": "npm run migration:run && npm run seed",
+    "db:refresh": "npm run migration:revert && npm run migration:run && npm run seed",
+    "health": "curl -f http://localhost:3000/health || exit 1"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",
