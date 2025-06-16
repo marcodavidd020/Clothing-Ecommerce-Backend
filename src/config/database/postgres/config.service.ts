@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class PostgresConfigService {
@@ -38,8 +40,34 @@ export class PostgresConfigService {
     return this.configService.get<boolean>('postgres.logging')!;
   }
 
-  get ssl(): boolean {
-    return this.configService.get<boolean>('postgres.ssl')!;
+  get ssl(): boolean | object {
+    const sslEnabled = this.configService.get<boolean>('postgres.ssl');
+    if (!sslEnabled) return false;
+    
+    // In production/serverless environment, use CA certificate
+    const nodeEnv = this.configService.get<string>('NODE_ENV');
+    if (nodeEnv === 'production') {
+      try {
+        // Try to read the CA certificate file
+        const caPath = path.join(process.cwd(), 'certs', 'ca.pem');
+        if (fs.existsSync(caPath)) {
+          const ca = fs.readFileSync(caPath, 'utf8');
+          return {
+            rejectUnauthorized: true,
+            ca: ca,
+          };
+        }
+      } catch (error) {
+        console.warn('Could not read CA certificate, falling back to relaxed SSL:', error.message);
+      }
+      
+      // Fallback for production without CA file
+      return {
+        rejectUnauthorized: false,
+      };
+    }
+    
+    return sslEnabled;
   }
 
   get autoLoadEntities(): boolean {

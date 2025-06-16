@@ -6,8 +6,9 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build && npm run copy-docs",
+    "build": "nest build && npm run copy-docs && npm run copy-certs",
     "copy-docs": "mkdir -p dist/documentation && cp -r documentation/* dist/documentation/",
+    "copy-certs": "mkdir -p dist/certs && cp -r certs/* dist/certs/",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -36,7 +37,7 @@
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
     "docker:clean": "docker-compose down -v --remove-orphans && docker system prune -f",
-    "vercel-build": "npm run build && ls -la dist/",
+    "vercel-build": "npm run build && ls -la dist/ && ls -la dist/certs/",
     "db:setup": "npm run migration:run && npm run seed",
     "db:refresh": "npm run migration:revert && npm run migration:run && npm run seed",
     "health": "curl -f http://localhost:3000/health || exit 1"
