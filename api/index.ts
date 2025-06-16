@@ -1,4 +1,6 @@
 import 'reflect-metadata';
+// Register tsconfig paths for runtime path resolution
+require('tsconfig-paths/register');
 
 // Interface definitions
 interface VercelRequest {
@@ -27,21 +29,10 @@ async function createNestApp() {
     const { NestFactory } = require('@nestjs/core');
     const { SwaggerModule, DocumentBuilder } = require('@nestjs/swagger');
     
-    // Try to load compiled modules, fallback to source if needed
-    let AppModule;
-    let ValidationPipe;
-    let ResponseTransformInterceptor;
-    
-    try {
-      AppModule = require('../dist/app.module').AppModule;
-      ValidationPipe = require('../dist/common/pipes/validation.pipe').ValidationPipe;
-      ResponseTransformInterceptor = require('../dist/common/interceptors/response-transform.interceptor').ResponseTransformInterceptor;
-    } catch {
-      // Fallback to source files if dist doesn't exist
-      AppModule = require('../src/app.module').AppModule;
-      ValidationPipe = require('../src/common/pipes/validation.pipe').ValidationPipe;
-      ResponseTransformInterceptor = require('../src/common/interceptors/response-transform.interceptor').ResponseTransformInterceptor;
-    }
+    // Load compiled modules from dist
+    const AppModule = require('../dist/app.module').AppModule;
+    const ValidationPipe = require('../dist/common/pipes/validation.pipe').ValidationPipe;
+    const ResponseTransformInterceptor = require('../dist/common/interceptors/response-transform.interceptor').ResponseTransformInterceptor;
 
     const app = await NestFactory.create(AppModule);
 
